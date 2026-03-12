@@ -64,26 +64,27 @@
   .start-btn:hover{transform:translateY(-4px) scale(1.05);}
   .start-btn:active{transform:scale(.97);}
 
-  /* LEVEL SELECT */
-  #levelSelectScreen{padding-bottom:40px;}
+  /* ADVENTURE MAP */
+  #levelSelectScreen{padding-bottom:60px;}
   .ls-back{background:white;border:none;border-radius:999px;padding:8px 18px;font-size:1rem;font-family:'Baloo 2',cursive;font-weight:700;color:#718096;cursor:pointer;box-shadow:0 4px 12px var(--shadow);transition:all .2s;}
   .ls-back:hover{color:var(--lion);}
-  .ls-header{text-align:center;margin-bottom:20px;}
-  .ls-title{font-size:clamp(1.6rem,5vw,2.6rem);font-weight:800;color:var(--lion);text-shadow:3px 3px 0 rgba(0,0,0,.1);}
-  .ls-sub{font-size:1rem;color:#718096;font-weight:600;margin-top:4px;}
+  .ls-header{text-align:center;margin-bottom:16px;}
+  .ls-title{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:800;color:var(--lion);text-shadow:3px 3px 0 rgba(0,0,0,.1);}
   .ls-mode-badge{display:inline-flex;align-items:center;gap:8px;background:white;border-radius:999px;padding:7px 18px;font-size:.95rem;font-weight:800;color:var(--text);box-shadow:0 3px 10px var(--shadow);margin-top:8px;}
-  .levels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;width:100%;max-width:880px;}
-  .level-card{background:white;border-radius:22px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 6px 18px var(--shadow);border:3px solid transparent;position:relative;overflow:hidden;}
-  .level-card:hover:not(.locked){transform:translateY(-6px) scale(1.04);box-shadow:0 14px 28px rgba(0,0,0,.18);}
-  .level-card.locked{opacity:.4;cursor:not-allowed;filter:grayscale(.5);}
-  .level-card.completed{border-color:var(--correct);}
-  .level-card.current{border-color:var(--lion);box-shadow:0 0 0 4px rgba(246,173,85,.3),0 6px 18px var(--shadow);}
-  .lc-icon{font-size:2.6rem;display:block;margin-bottom:6px;}
-  .lc-num{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#A0AEC0;margin-bottom:2px;}
-  .lc-name{font-size:.95rem;font-weight:800;color:var(--text);line-height:1.2;}
-  .lc-stars{font-size:.85rem;margin-top:5px;min-height:1.2em;}
-  .lc-lock{position:absolute;top:10px;right:10px;font-size:1rem;}
-  .lc-new{position:absolute;top:-2px;right:-2px;background:var(--lion);color:white;font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:0 20px 0 10px;letter-spacing:.5px;}
+  .path-wrap{position:relative;width:320px;max-width:95vw;}
+  .path-stop{position:absolute;transform:translate(-50%,-50%);cursor:pointer;}
+  .path-stop:hover:not(.ps-locked){transform:translate(-50%,-50%) scale(1.12);}
+  .ps-circle{width:62px;height:62px;border-radius:50%;border:5px solid white;display:flex;align-items:center;justify-content:center;font-size:1.55rem;box-shadow:0 6px 18px rgba(0,0,0,.2);transition:all .2s;position:relative;}
+  .path-stop.ps-done .ps-circle{background:linear-gradient(135deg,var(--correct),#276749);}
+  .path-stop.ps-next .ps-circle{background:linear-gradient(135deg,var(--lion),#C05621);animation:nextPulse 1.6s ease-in-out infinite;}
+  .path-stop.ps-locked .ps-circle{background:#CBD5E0;cursor:not-allowed;}
+  @keyframes nextPulse{0%,100%{box-shadow:0 0 0 0 rgba(246,173,85,.6),0 6px 18px rgba(0,0,0,.2)}65%{box-shadow:0 0 0 14px rgba(246,173,85,0),0 6px 18px rgba(0,0,0,.2)}}
+  .ps-stars{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:.68rem;white-space:nowrap;letter-spacing:1px;}
+  .ps-label{position:absolute;top:50%;transform:translateY(-50%);font-size:.72rem;font-weight:800;color:var(--text);white-space:nowrap;background:white;border-radius:999px;padding:3px 10px;box-shadow:0 2px 8px var(--shadow);}
+  .ps-label.label-right{left:calc(100% + 10px);}
+  .ps-label.label-left{right:calc(100% + 10px);}
+  .path-character{position:absolute;font-size:2.2rem;transform:translate(-50%,-220%);animation:charBob 1.3s ease-in-out infinite;pointer-events:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25));z-index:10;}
+  @keyframes charBob{0%,100%{transform:translate(-50%,-220%) translateY(0)}50%{transform:translate(-50%,-220%) translateY(-9px)}}
 
   /* GAME HEADER */
   .game-header{width:100%;max-width:800px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
@@ -163,8 +164,22 @@
   .play-again-btn{background:linear-gradient(135deg,var(--correct),#276749);color:white;border:none;border-radius:999px;padding:14px 40px;font-size:1.3rem;font-family:'Baloo 2',cursive;font-weight:800;cursor:pointer;box-shadow:0 8px 24px rgba(72,187,120,.45);transition:all .25s cubic-bezier(.34,1.56,.64,1);margin:6px;}
   .play-again-btn:hover{transform:translateY(-4px) scale(1.05);}
   .next-level-btn{background:linear-gradient(135deg,var(--lion),#C05621);color:white;border:none;border-radius:999px;padding:14px 40px;font-size:1.3rem;font-family:'Baloo 2',cursive;font-weight:800;cursor:pointer;box-shadow:0 8px 24px rgba(246,173,85,.5);transition:all .25s cubic-bezier(.34,1.56,.64,1);margin:6px;display:none;}
-  .next-level-btn:hover{transform:translateY(-4px) scale(1.05);}
-  .next-level-btn.show{display:inline-block;}
+  /* ADVENTURE TRANSITION */
+  #transitionScreen{position:fixed;inset:0;z-index:500;display:none;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#87CEEB 0%,#B0E0FF 60%,#FFFAF0 100%);}
+  #transitionScreen.active{display:flex;}
+  .trans-label{font-size:1.4rem;font-weight:800;color:var(--lion);text-shadow:2px 2px 0 rgba(0,0,0,.1);margin-bottom:24px;animation:fadeIn .4s ease;}
+  .trans-map{position:relative;width:260px;height:220px;}
+  .trans-stop{position:absolute;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;border:4px solid white;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 4px 14px rgba(0,0,0,.18);}
+  .trans-stop.from{background:linear-gradient(135deg,var(--correct),#276749);}
+  .trans-stop.to{background:linear-gradient(135deg,var(--lion),#C05621);}
+  .trans-char{position:absolute;font-size:2.4rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25));animation:walkPath 2.2s cubic-bezier(.45,0,.55,1) forwards;}
+  @keyframes walkPath{
+    0%  {left:var(--sx);top:var(--sy);transform:translate(-50%,-50%) scale(1);}
+    40% {left:var(--mx);top:var(--my);transform:translate(-50%,-50%) scale(1.2) rotate(-8deg);}
+    100%{left:var(--ex);top:var(--ey);transform:translate(-50%,-50%) scale(1);}
+  }
+  .trans-skip{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.7);border:none;border-radius:999px;padding:8px 24px;font-size:.95rem;font-family:'Baloo 2',cursive;font-weight:700;color:#718096;cursor:pointer;backdrop-filter:blur(4px);}
+  .trans-skip:hover{background:white;}
 </style>
 </head>
 <body>
@@ -180,49 +195,46 @@
   <p class="subtitle">Learn numbers & maths with Leo the Lion! 🌟</p>
   <p class="mode-label">What do you want to practise?</p>
   <div class="mode-selector">
-    <div class="mode-btn m-count" onclick="selectMode('count',this)">
+    <div class="mode-btn m-count" onclick="startMode('count')">
       <span class="mode-icon">🔢</span>
       <span class="mode-name">Count & Match</span>
       <span class="mode-desc">Count objects and match numbers to groups</span>
     </div>
-    <div class="mode-btn m-calc" onclick="selectMode('calc',this)">
+    <div class="mode-btn m-calc" onclick="startMode('calc')">
       <span class="mode-icon">➕</span>
       <span class="mode-name">Calculations</span>
       <span class="mode-desc">Addition, subtraction and missing numbers</span>
     </div>
-    <div class="mode-btn m-seq" onclick="selectMode('seq',this)">
+    <div class="mode-btn m-seq" onclick="startMode('seq')">
       <span class="mode-icon">➡️</span>
       <span class="mode-name">Sequences</span>
       <span class="mode-desc">What comes next in the pattern?</span>
     </div>
-    <div class="mode-btn m-mixed" onclick="selectMode('mixed',this)">
+    <div class="mode-btn m-mixed" onclick="startMode('mixed')">
       <span class="mode-icon">🔀</span>
       <span class="mode-name">Mixed</span>
       <span class="mode-desc">All exercise types together</span>
     </div>
   </div>
-  <button class="start-btn" id="startBtn" onclick="goToLevelSelect()" disabled style="opacity:.5">Choose Level 🗺️</button>
 </div>
 
-<!-- LEVEL SELECT -->
+<!-- ADVENTURE MAP -->
 <div class="screen" id="levelSelectScreen">
-  <div style="width:100%;max-width:880px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-    <button class="ls-back" onclick="showScreen('welcomeScreen')">← Back</button>
-    <button class="ls-back" onclick="confirmResetProgress()" style="color:#E53E3E;">🗑️ Reset Progress</button>
+  <div style="width:100%;max-width:420px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <button class="ls-back" onclick="showScreen('welcomeScreen')">← Modes</button>
+    <button class="ls-back" onclick="confirmResetProgress()" style="color:#E53E3E;">🗑️ Reset</button>
   </div>
   <div class="ls-header">
-    <div style="font-size:3.5rem;animation:mascotBob 2s ease-in-out infinite;margin-bottom:4px">🦁</div>
-    <div class="ls-title">Choose Your Level</div>
+    <div class="ls-title">Adventure Map 🗺️</div>
     <div class="ls-mode-badge" id="lsModeBadge">🔢 Count &amp; Match</div>
-    <div class="ls-sub" style="margin-top:8px">Complete a level to unlock the next one!</div>
   </div>
-  <div class="levels-grid" id="levelsGrid"></div>
+  <div class="path-wrap" id="pathWrap"></div>
 </div>
 
 <!-- GAME -->
 <div class="screen" id="gameScreen">
   <div class="game-header">
-    <button class="back-btn" onclick="goBackToLevels()">← Levels</button>
+    <button class="back-btn" onclick="goBackToLevels()">🗺️ Map</button>
     <div class="progress-bar-wrap">
       <div class="progress-bar" id="progressBar" style="width:0%"></div>
     </div>
@@ -242,13 +254,18 @@
     <p class="results-score-line" id="resultsScore"></p>
     <button class="next-level-btn" id="nextLevelBtn" onclick="playNextLevel()">Next Level ➡️</button>
     <button class="play-again-btn" onclick="replayLevel()">Try Again 🔄</button>
-    <button class="play-again-btn" style="background:linear-gradient(135deg,var(--blue),#2B6CB0)" onclick="goBackToLevels()">All Levels 🗺️</button>
+    <button class="play-again-btn" style="background:linear-gradient(135deg,var(--blue),#2B6CB0)" onclick="goBackToLevels()">🗺️ Map</button>
   </div>
 </div>
 
+<!-- ADVENTURE TRANSITION -->
+<div id="transitionScreen">
+  <div class="trans-label" id="transLabel">Off to the next adventure!</div>
+  <div class="trans-map" id="transMap"></div>
+  <button class="trans-skip" onclick="skipTransition()">Skip ➡️</button>
+</div>
+
 <script>
-// ═══════════════════════════════════════════════
-//  EXERCISE MODES
 //  count — counting & number matching only
 //  calc  — addition, subtraction, missing number
 //  seq   — sequences only
@@ -290,16 +307,16 @@ const LEVEL_DEFS = {
     { id:10, name:'Times 5',         icon:'✖️' },
   ],
   seq: [
-    { id:1,  name:'Count by 1s',     icon:'1️⃣' },
-    { id:2,  name:'Count by 2s',     icon:'2️⃣' },
-    { id:3,  name:'Count by 5s',     icon:'5️⃣' },
-    { id:4,  name:'Count by 10s',    icon:'🔟' },
-    { id:5,  name:'Skip Count',      icon:'➡️' },
-    { id:6,  name:'Backwards by 1',  icon:'◀️' },
-    { id:7,  name:'Backwards by 2',  icon:'⏪' },
-    { id:8,  name:'Mixed Steps',     icon:'🔀' },
-    { id:9,  name:'Big Numbers',     icon:'💯' },
-    { id:10, name:'Sequence Master', icon:'🏆' },
+    { id:1,  name:'1 → 2 → 3 → ?',   icon:'1️⃣' },
+    { id:2,  name:'2 → 4 → 6 → ?',   icon:'2️⃣' },
+    { id:3,  name:'5 → 10 → 15 → ?', icon:'5️⃣' },
+    { id:4,  name:'10 → 20 → 30 → ?',icon:'🔟' },
+    { id:5,  name:'Skip Counting',    icon:'➡️' },
+    { id:6,  name:'9 → 8 → 7 → ?',   icon:'◀️' },
+    { id:7,  name:'10 → 8 → 6 → ?',  icon:'⏪' },
+    { id:8,  name:'Any Step → ?',     icon:'🔀' },
+    { id:9,  name:'Big Steps → ?',    icon:'💯' },
+    { id:10, name:'Sequence Master',  icon:'🏆' },
   ],
   mixed: [
     { id:1,  name:'Starter Mix',     icon:'🌟' },
@@ -425,40 +442,173 @@ function saveProgress(){ try{sessionStorage.setItem('mathprog2',JSON.stringify(p
 // ═══════════════════════════════════════════════
 //  WELCOME
 // ═══════════════════════════════════════════════
-function selectMode(mode,el){
-  exerciseMode=mode;
-  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
-  const btn=document.getElementById('startBtn');
-  btn.disabled=false; btn.style.opacity='1';
-}
 function mascotClick(el){
   el.style.animation='none'; void el.offsetWidth; el.style.animation='bounceIn .6s ease';
   speakNum("Roar! Let's do some maths!");
 }
-function goToLevelSelect(){ if(!exerciseMode) return; renderLevelSelect(); showScreen('levelSelectScreen'); }
 
-// ═══════════════════════════════════════════════
-//  LEVEL SELECT
-// ═══════════════════════════════════════════════
+// Level 1 at BOTTOM (y=1020), level 10 at TOP (y=60) — player scrolls UP
+const PATH_X=[ 180, 280, 220,  70, 130, 290, 200,  80, 240, 180];
+const PATH_Y=[1020, 920, 800, 690, 580, 470, 360, 240, 130,  60];
+const PATH_CP=[
+  [300,980, 310,940],
+  [200,860, 120,830],
+  [ 60,760,  50,720],
+  [100,640, 220,610],
+  [320,530, 340,500],
+  [280,420, 160,390],
+  [ 80,310,  60,270],
+  [130,200, 260,165],
+  [280,100, 220, 80],
+];
+
+const MODE_THEMES={
+  count: {bg:'#DCEDC8',road:'#7B5E3A',sky:'#B3E5FC',seed:5 },
+  calc:  {bg:'#FFE0B2',road:'#795548',sky:'#FFF9C4',seed:17},
+  seq:   {bg:'#B2EBF2',road:'#546E7A',sky:'#E1F5FE',seed:31},
+  mixed: {bg:'#F8BBD0',road:'#6D4C41',sky:'#E8EAF6',seed:43},
+};
+
+function mkRng(seed){let s=seed;return ()=>{s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/0xffffffff;};}
+
+function startMode(mode){
+  exerciseMode=mode;
+  renderLevelSelect();
+  showScreen('levelSelectScreen');
+  const ls=document.getElementById('levelSelectScreen');
+  ls.scrollTop=99999;
+  setTimeout(()=>{const el=document.querySelector('.path-stop.ps-next');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},400);
+}
+
 function renderLevelSelect(){
   const mp=progress[exerciseMode]||{};
+  const defs=LEVEL_DEFS[exerciseMode];
+  const theme=MODE_THEMES[exerciseMode]||MODE_THEMES.count;
   document.getElementById('lsModeBadge').textContent=MODES[exerciseMode].label;
-  document.getElementById('levelsGrid').innerHTML=LEVEL_DEFS[exerciseMode].map((lvl,i)=>{
+
+  const W=360, totalH=PATH_Y[0]+80;
+  const wrap=document.getElementById('pathWrap');
+  wrap.style.cssText=`position:relative;width:${W}px;max-width:96vw;height:${totalH}px;`;
+  const rng=mkRng(theme.seed);
+
+  let pathD=`M ${PATH_X[0]} ${PATH_Y[0]}`;
+  for(let i=1;i<defs.length;i++){
+    const [cp1x,cp1y,cp2x,cp2y]=PATH_CP[i-1];
+    pathD+=` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${PATH_X[i]} ${PATH_Y[i]}`;
+  }
+
+  function cubicPt(t,x1,y1,cp1x,cp1y,cp2x,cp2y,x2,y2){
+    const mt=1-t;
+    return [mt*mt*mt*x1+3*mt*mt*t*cp1x+3*mt*t*t*cp2x+t*t*t*x2,
+            mt*mt*mt*y1+3*mt*mt*t*cp1y+3*mt*t*t*cp2y+t*t*t*y2];
+  }
+
+  const BASE=[
+    {e:'🌲',sz:1.9},{e:'🌳',sz:1.8},{e:'🌴',sz:1.6},{e:'🎄',sz:1.7},
+    {e:'🌊',sz:1.3},{e:'🐟',sz:1.1},{e:'🦆',sz:1.2},
+    {e:'🐇',sz:1.2},{e:'🦔',sz:1.1},{e:'🦌',sz:1.4},{e:'🐸',sz:1.1},
+    {e:'🦋',sz:1.3},{e:'🐝',sz:1.1},{e:'🦜',sz:1.2},{e:'🦢',sz:1.3},
+    {e:'🏠',sz:1.6},{e:'🏡',sz:1.5},{e:'🏰',sz:1.8},{e:'⛺',sz:1.4},{e:'🌾',sz:1.3},
+    {e:'🌸',sz:1.2},{e:'🍄',sz:1.1},{e:'🪨',sz:1.2},{e:'🌻',sz:1.3},
+    {e:'🌉',sz:1.6},{e:'⛵',sz:1.3},{e:'🏞️',sz:1.4},
+  ];
+  const EXTRAS={
+    count:['🐄','🐑','🐓','🚜','🌼','🥕','🌈','☀️','🐔','🐖','🏡','🌾'],
+    calc: ['🏪','🏨','⛪','🎠','🎡','🚗','🚌','🏗️','🌉','🏬','🕌','🌆'],
+    seq:  ['⛰️','🏔️','🌋','🗻','🏄','🚣','🌧️','❄️','🏕️','🦅','🌨️','⛷️'],
+    mixed:['🧙','🦄','✨','🔮','🐉','⭐','🎪','🧚','🔥','💎','🌙','🏰'],
+  };
+  const pool=[...BASE,...(EXTRAS[exerciseMode]||[]).map(e=>({e,sz:1.3}))];
+
+  let decos='';
+  for(let seg=0;seg<defs.length-1;seg++){
+    const [x1,y1]=[PATH_X[seg],PATH_Y[seg]];
+    const [x2,y2]=[PATH_X[seg+1],PATH_Y[seg+1]];
+    const [cp1x,cp1y,cp2x,cp2y]=PATH_CP[seg];
+    const count=5+Math.floor(rng()*3);
+    for(let side=0;side<2;side++){
+      for(let d=0;d<count;d++){
+        const t=0.08+rng()*0.84;
+        const [bx,by]=cubicPt(t,x1,y1,cp1x,cp1y,cp2x,cp2y,x2,y2);
+        const offset=34+rng()*44;
+        const dx=side===0?-offset:offset;
+        const item=pool[Math.floor(rng()*pool.length)];
+        const fs=(item.sz*(0.8+rng()*.45)).toFixed(2);
+        const rot=((rng()-.5)*24).toFixed(1);
+        const op=(0.7+rng()*.3).toFixed(2);
+        decos+=`<text x="${(bx+dx).toFixed(1)}" y="${(by+14).toFixed(1)}" font-size="${fs}em" `+
+          `transform="rotate(${rot},${(bx+dx).toFixed(1)},${by.toFixed(1)})" opacity="${op}">${item.e}</text>`;
+      }
+    }
+  }
+
+  let water='';
+  const lakes=[[30,900,70,22],[270,750,55,18],[20,550,80,25],[285,390,60,20],[25,200,65,20]];
+  const wCols=['#81D4FA','#4FC3F7','#80DEEA','#B2EBF2','#4DD0E1'];
+  for(let i=0;i<lakes.length;i++){
+    const [lx,ly,lrx,lry]=lakes[i];
+    const col=wCols[Math.floor(rng()*wCols.length)];
+    const col2=wCols[Math.floor(rng()*wCols.length)];
+    water+=`<ellipse cx="${lx}" cy="${ly}" rx="${lrx}" ry="${lry}" fill="${col}" opacity="${(.4+rng()*.25).toFixed(2)}"/>`;
+    water+=`<ellipse cx="${W-lx}" cy="${ly+rng()*60-30}" rx="${(lrx*.7).toFixed()}" ry="${(lry*.8).toFixed()}" fill="${col2}" opacity="${(.35+rng()*.2).toFixed(2)}"/>`;
+  }
+
+  let forestL='',forestR='';
+  const treeSet=['🌲','🌳','🎄','🌲','🌳','🌲'];
+  for(let y=10;y<totalH;y+=38){
+    forestL+=`<text x="${(rng()*10).toFixed()}" y="${y+34}" font-size="${(1.3+rng()*.8).toFixed(1)}em" opacity="${(.55+rng()*.3).toFixed(2)}">${treeSet[Math.floor(rng()*treeSet.length)]}</text>`;
+    forestR+=`<text x="${(W-30-rng()*10).toFixed()}" y="${y+34}" font-size="${(1.3+rng()*.8).toFixed(1)}em" opacity="${(.55+rng()*.3).toFixed(2)}">${treeSet[Math.floor(rng()*treeSet.length)]}</text>`;
+  }
+
+  const skyGrad=`<defs>
+    <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${theme.sky}" stop-opacity="0.9"/>
+      <stop offset="25%" stop-color="${theme.bg}" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="groundG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="75%" stop-color="${theme.bg}" stop-opacity="0"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,.08)" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <rect width="${W}" height="${totalH}" fill="${theme.bg}"/>
+  <rect width="${W}" height="${totalH}" fill="url(#skyG)"/>
+  <rect width="${W}" height="${totalH}" fill="url(#groundG)"/>`;
+
+  const road=`
+    <path d="${pathD}" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="${pathD}" fill="none" stroke="${theme.road}" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="${pathD}" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="12" stroke-linecap="round" stroke-dasharray="22 26"/>
+    <path d="${pathD}" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round"/>`;
+
+  wrap.innerHTML=`<svg style="position:absolute;top:0;left:0;width:100%;height:${totalH}px"
+    viewBox="0 0 ${W} ${totalH}" xmlns="http://www.w3.org/2000/svg">
+    ${skyGrad}${water}${forestL}${forestR}${decos}${road}
+  </svg>`;
+
+  defs.forEach((lvl,i)=>{
     const p=mp[lvl.id]||{}, stars=p.stars||0;
-    const prevDone=i===0||(mp[LEVEL_DEFS[exerciseMode][i-1].id]||{}).stars>0;
-    const locked=!prevDone, isNext=prevDone&&!stars;
-    const starStr='⭐'.repeat(stars)+'☆'.repeat(3-stars);
-    return `<div class="level-card ${locked?'locked':''} ${stars?'completed':''} ${isNext?'current':''}"
-      onclick="${locked?'':('startLevel('+lvl.id+')')}">
-      ${isNext?'<div class="lc-new">NEW!</div>':''}
-      ${locked?'<div class="lc-lock">🔒</div>':''}
-      <span class="lc-icon">${lvl.icon}</span>
-      <div class="lc-num">Level ${lvl.id}</div>
-      <div class="lc-name">${lvl.name}</div>
-      <div class="lc-stars">${stars?starStr:(locked?'':'— — —')}</div>
-    </div>`;
-  }).join('');
+    const prevOk=i===0||(mp[defs[i-1].id]||{}).stars>0;
+    const locked=!prevOk, isNext=prevOk&&!stars, isDone=stars>0;
+    const cls=locked?'ps-locked':isDone?'ps-done':'ps-next';
+    const x=PATH_X[i], y=PATH_Y[i];
+    const labelRight=x<W/2;
+    const el=document.createElement('div');
+    el.className=`path-stop ${cls}`;
+    el.style.cssText=`left:${x}px;top:${y}px;`;
+    el.innerHTML=`<div class="ps-circle">${locked?'🔒':lvl.icon}
+        <span style="position:absolute;bottom:-8px;right:-8px;background:white;border-radius:999px;font-size:.6rem;font-weight:900;padding:1px 5px;color:#555;box-shadow:0 1px 4px rgba(0,0,0,.2)">${lvl.id}</span>
+      </div>
+      ${isDone?`<div class="ps-stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div>`:''}
+      <div class="ps-label ${labelRight?'label-right':'label-left'}">${lvl.name}</div>`;
+    if(!locked) el.onclick=()=>startLevel(lvl.id);
+    wrap.appendChild(el);
+    if(isNext){
+      const ch=document.createElement('div');
+      ch.className='path-character'; ch.textContent='🦁';
+      ch.style.cssText=`left:${x}px;top:${y}px;`;
+      wrap.appendChild(ch);
+    }
+  });
 }
 
 function confirmResetProgress(){
@@ -471,10 +621,10 @@ function startLevel(id){
   currentLevelId=id;
   exercises=generateExercises(id, exerciseMode);
   currentIdx=0; score=0; answered=false;
-  document.getElementById('levelIndicator').textContent=`Lvl ${id}: ${LEVEL_DEFS[exerciseMode][id-1].name}`;
+  document.getElementById('levelIndicator').textContent=`${LEVEL_DEFS[exerciseMode][id-1].icon} ${LEVEL_DEFS[exerciseMode][id-1].name}`;
   updateProgress(); renderExercise(); showScreen('gameScreen');
 }
-function goBackToLevels(){ if(speechSynth) speechSynth.cancel(); renderLevelSelect(); showScreen('levelSelectScreen'); }
+function goBackToLevels(){ if(speechSynth) speechSynth.cancel(); renderLevelSelect(); showScreen('levelSelectScreen'); setTimeout(()=>{const el=document.querySelector('.path-stop.ps-next');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},200); }
 
 // ═══════════════════════════════════════════════
 //  GAME FLOW
@@ -712,7 +862,56 @@ function showResults(){
   showScreen('resultsScreen');
 }
 function replayLevel(){ startLevel(currentLevelId); }
-function playNextLevel(){ if(currentLevelId<LEVEL_DEFS[exerciseMode].length) startLevel(currentLevelId+1); }
+
+let _transitionTarget=null, _transTimer=null;
+function playNextLevel(){
+  const defs=LEVEL_DEFS[exerciseMode];
+  if(currentLevelId>=defs.length) return;
+  const nextId=currentLevelId+1;
+  _transitionTarget=nextId;
+  const fromIdx=currentLevelId-1, toIdx=nextId-1;
+  const fromLvl=defs[fromIdx], toLvl=defs[toIdx];
+  playTransition(fromIdx, toIdx, '🦁', fromLvl, toLvl, ()=>startLevel(nextId));
+}
+
+function playTransition(fromIdx, toIdx, char, fromLvl, toLvl, onDone){
+  const RAW_X=PATH_X;
+  const RAW_Y=PATH_Y;
+  const pad=40, W=260, H=220;
+  const sx=RAW_X[fromIdx], sy=RAW_Y[fromIdx];
+  const ex=RAW_X[toIdx],   ey=RAW_Y[toIdx];
+  const minX=Math.min(sx,ex)-pad, maxX=Math.max(sx,ex)+pad;
+  const minY=Math.min(sy,ey)-pad, maxY=Math.max(sy,ey)+pad;
+  const sc=Math.min(W/(maxX-minX), H/(maxY-minY), .8);
+  function tx(x){ return (x-minX)*sc+(W-(maxX-minX)*sc)/2; }
+  function ty(y){ return (y-minY)*sc+(H-(maxY-minY)*sc)/2; }
+  const fxp=tx(sx)+'px', fyp=ty(sy)+'px';
+  const exp=tx(ex)+'px', eyp=ty(ey)+'px';
+  const mxp=tx((sx+ex)/2)+'px', myp=ty(Math.min(sy,ey)-60)+'px';
+
+  const map=document.getElementById('transMap');
+  map.innerHTML=`<svg style="position:absolute;top:0;left:0;width:${W}px;height:${H}px" viewBox="0 0 ${W} ${H}">
+    <path d="M ${tx(sx)} ${ty(sy)} Q ${tx((sx+ex)/2)} ${ty(Math.min(sy,ey)-60)} ${tx(ex)} ${ty(ey)}"
+      fill="none" stroke="#D4A373" stroke-width="10" stroke-dasharray="16 10" stroke-linecap="round" opacity=".6"/>
+  </svg>
+  <div class="trans-stop from" style="left:${fxp};top:${fyp}">${fromLvl.icon}</div>
+  <div class="trans-stop to"   style="left:${exp};top:${eyp}">${toLvl.icon}</div>
+  <div class="trans-char" style="--sx:${fxp};--sy:${fyp};--mx:${mxp};--my:${myp};--ex:${exp};--ey:${eyp}">${char}</div>`;
+
+  document.getElementById('transLabel').textContent=`🌟 Off to ${toLvl.name}!`;
+  document.getElementById('transitionScreen').classList.add('active');
+
+  _transTimer=setTimeout(()=>{
+    document.getElementById('transitionScreen').classList.remove('active');
+    onDone();
+  }, 2800);
+}
+
+function skipTransition(){
+  if(_transTimer){ clearTimeout(_transTimer); _transTimer=null; }
+  document.getElementById('transitionScreen').classList.remove('active');
+  if(_transitionTarget){ const t=_transitionTarget; _transitionTarget=null; startLevel(t); }
+}
 
 // ═══════════════════════════════════════════════
 //  AUDIO
