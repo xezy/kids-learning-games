@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Adventure 🦁</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lion:#F6AD55;--sun:#FFD700;--correct:#48BB78;--wrong:#FC8181;
+    --bg:#FFFAF0;--shadow:rgba(0,0,0,0.12);--text:#2D3748;
+    --accent:#6B46C1;--pink:#ED64A6;--blue:#4299E1;--orange:#ED8936;
+    --teal:#38B2AC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Baloo 2',cursive;background:var(--bg);min-height:100vh;overflow-x:hidden;}
+  .sky-bg{position:fixed;inset:0;background:linear-gradient(180deg,#FFF0D0 0%,#FFE8B0 40%,#FFFAF0 100%);z-index:-2;}
+  .cloud{position:fixed;background:white;border-radius:50px;opacity:.7;animation:driftCloud linear infinite;z-index:-1;}
+  .cloud::before,.cloud::after{content:'';position:absolute;background:white;border-radius:50%;}
+  .cloud1{width:120px;height:40px;top:8%;animation-duration:35s;}
+  .cloud1::before{width:60px;height:60px;top:-30px;left:20px;}
+  .cloud1::after{width:45px;height:45px;top:-22px;left:55px;}
+  .cloud2{width:80px;height:28px;top:18%;animation-duration:50s;animation-delay:-15s;}
+  .cloud2::before{width:40px;height:40px;top:-20px;left:10px;}
+  .cloud2::after{width:30px;height:30px;top:-15px;left:35px;}
+  .cloud3{width:150px;height:50px;top:5%;animation-duration:45s;animation-delay:-25s;}
+  .cloud3::before{width:80px;height:70px;top:-40px;left:25px;}
+  .cloud3::after{width:55px;height:55px;top:-30px;left:75px;}
+  @keyframes driftCloud{from{left:-200px}to{left:calc(100vw + 200px)}}
+  .sparkle{position:fixed;pointer-events:none;font-size:1.5rem;animation:floatUp 1.5s ease-out forwards;z-index:999;}
+  @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1) rotate(0)}100%{opacity:0;transform:translateY(-120px) scale(1.8) rotate(360deg)}}
+  .confetti-piece{position:fixed;width:12px;height:12px;border-radius:3px;pointer-events:none;animation:confettiFall linear forwards;z-index:1000;}
+  @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+  /* SCREENS */
+  .screen{display:none;min-height:100vh;padding:20px;animation:fadeInScreen .4s ease;}
+  .screen.active{display:flex;flex-direction:column;align-items:center;}
+  @keyframes fadeInScreen{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+
+  /* WELCOME */
+  .welcome-title{font-size:clamp(2.5rem,8vw,5rem);font-weight:800;color:var(--lion);text-shadow:4px 4px 0 #C05621,6px 6px 0 rgba(0,0,0,.15);text-align:center;margin-top:24px;animation:bounceIn .7s cubic-bezier(.36,.07,.19,.97);line-height:1.1;}
+  @keyframes bounceIn{0%{transform:scale(.3) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(3deg)}80%{transform:scale(.95) rotate(-1deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
+  .mascot{font-size:6rem;text-align:center;animation:mascotBob 2s ease-in-out infinite;cursor:pointer;user-select:none;filter:drop-shadow(0 8px 16px rgba(0,0,0,.2));}
+  @keyframes mascotBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-18px) rotate(3deg)}}
+  .subtitle{font-size:1.2rem;color:var(--accent);font-weight:600;text-align:center;margin:6px 0 18px;}
+  .mode-label{font-size:1.05rem;font-weight:700;color:#718096;margin-bottom:14px;text-align:center;}
+
+  /* MODE SELECTOR */
+  .mode-selector{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:22px;width:100%;max-width:920px;}
+  .mode-btn{background:white;border:4px solid transparent;border-radius:24px;padding:20px 16px;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 24px var(--shadow);text-align:center;flex:1;min-width:150px;max-width:210px;}
+  .mode-btn:hover,.mode-btn.selected{transform:translateY(-5px) scale(1.04);box-shadow:0 14px 28px rgba(0,0,0,.18);}
+  .mode-btn.m-count  {border-color:var(--pink);}
+  .mode-btn.m-count:hover,.mode-btn.m-count.selected{background:#FFF0F6;}
+  .mode-btn.m-calc   {border-color:var(--blue);}
+  .mode-btn.m-calc:hover,.mode-btn.m-calc.selected{background:#EBF8FF;}
+  .mode-btn.m-seq    {border-color:var(--orange);}
+  .mode-btn.m-seq:hover,.mode-btn.m-seq.selected{background:#FFFAF0;}
+  .mode-btn.m-mixed  {border-color:var(--teal);}
+  .mode-btn.m-mixed:hover,.mode-btn.m-mixed.selected{background:#E6FFFA;}
+  .mode-btn .mode-icon{font-size:2.6rem;display:block;margin-bottom:8px;}
+  .mode-btn .mode-name{font-size:1.05rem;font-weight:800;color:var(--text);}
+  .mode-btn .mode-desc{font-size:.8rem;color:#718096;font-weight:600;margin-top:4px;line-height:1.35;}
+  .start-btn{background:linear-gradient(135deg,var(--lion),#C05621);color:white;border:none;border-radius:999px;padding:15px 50px;font-size:1.4rem;font-family:'Baloo 2',cursive;font-weight:800;cursor:pointer;box-shadow:0 8px 24px rgba(246,173,85,.5);transition:all .25s cubic-bezier(.34,1.56,.64,1);margin-top:4px;}
+  .start-btn:hover{transform:translateY(-4px) scale(1.05);}
+  .start-btn:active{transform:scale(.97);}
+
+  /* LEVEL SELECT */
+  #levelSelectScreen{padding-bottom:40px;}
+  .ls-back{background:white;border:none;border-radius:999px;padding:8px 18px;font-size:1rem;font-family:'Baloo 2',cursive;font-weight:700;color:#718096;cursor:pointer;box-shadow:0 4px 12px var(--shadow);transition:all .2s;}
+  .ls-back:hover{color:var(--lion);}
+  .ls-header{text-align:center;margin-bottom:20px;}
+  .ls-title{font-size:clamp(1.6rem,5vw,2.6rem);font-weight:800;color:var(--lion);text-shadow:3px 3px 0 rgba(0,0,0,.1);}
+  .ls-sub{font-size:1rem;color:#718096;font-weight:600;margin-top:4px;}
+  .ls-mode-badge{display:inline-flex;align-items:center;gap:8px;background:white;border-radius:999px;padding:7px 18px;font-size:.95rem;font-weight:800;color:var(--text);box-shadow:0 3px 10px var(--shadow);margin-top:8px;}
+  .levels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;width:100%;max-width:880px;}
+  .level-card{background:white;border-radius:22px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 6px 18px var(--shadow);border:3px solid transparent;position:relative;overflow:hidden;}
+  .level-card:hover:not(.locked){transform:translateY(-6px) scale(1.04);box-shadow:0 14px 28px rgba(0,0,0,.18);}
+  .level-card.locked{opacity:.4;cursor:not-allowed;filter:grayscale(.5);}
+  .level-card.completed{border-color:var(--correct);}
+  .level-card.current{border-color:var(--lion);box-shadow:0 0 0 4px rgba(246,173,85,.3),0 6px 18px var(--shadow);}
+  .lc-icon{font-size:2.6rem;display:block;margin-bottom:6px;}
+  .lc-num{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#A0AEC0;margin-bottom:2px;}
+  .lc-name{font-size:.95rem;font-weight:800;color:var(--text);line-height:1.2;}
+  .lc-stars{font-size:.85rem;margin-top:5px;min-height:1.2em;}
+  .lc-lock{position:absolute;top:10px;right:10px;font-size:1rem;}
+  .lc-new{position:absolute;top:-2px;right:-2px;background:var(--lion);color:white;font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:0 20px 0 10px;letter-spacing:.5px;}
+
+  /* GAME HEADER */
+  .game-header{width:100%;max-width:800px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .score-badge{background:white;border-radius:999px;padding:8px 18px;font-size:1.1rem;font-weight:800;color:var(--lion);box-shadow:0 4px 12px var(--shadow);display:flex;align-items:center;gap:6px;}
+  .progress-bar-wrap{flex:1;height:16px;background:white;border-radius:999px;overflow:hidden;box-shadow:inset 0 2px 6px rgba(0,0,0,.1);min-width:100px;max-width:280px;}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--lion),var(--sun));border-radius:999px;transition:width .5s cubic-bezier(.34,1.56,.64,1);}
+  .back-btn{background:white;border:none;border-radius:999px;padding:7px 15px;font-size:.9rem;font-family:'Baloo 2',cursive;font-weight:700;color:#718096;cursor:pointer;box-shadow:0 4px 12px var(--shadow);transition:all .2s;}
+  .back-btn:hover{transform:translateY(-2px);color:var(--lion);}
+  .level-indicator{background:linear-gradient(135deg,var(--accent),#553C9A);color:white;border-radius:999px;padding:7px 15px;font-size:.85rem;font-weight:800;box-shadow:0 4px 12px rgba(107,70,193,.35);}
+
+  /* QUESTION CARD */
+  .question-card{background:white;border-radius:30px;padding:26px 22px;width:100%;max-width:800px;box-shadow:0 16px 40px var(--shadow);position:relative;overflow:hidden;}
+  .question-card::before{content:'';position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--lion),var(--sun),var(--correct),var(--blue));}
+  .question-text{font-size:clamp(1.2rem,4vw,1.8rem);font-weight:800;color:var(--text);text-align:center;margin-bottom:18px;line-height:1.3;}
+  .big-number{font-size:clamp(4rem,14vw,7rem);font-weight:800;text-align:center;color:var(--accent);line-height:1;margin:4px 0 18px;font-family:'Nunito',sans-serif;text-shadow:3px 3px 0 rgba(107,70,193,.2);}
+  .equation{font-size:clamp(2rem,7vw,4rem);font-weight:800;text-align:center;color:var(--text);line-height:1.2;margin:4px 0 20px;font-family:'Nunito',sans-serif;letter-spacing:2px;}
+  .equation .op{color:var(--lion);}
+  .equation .eq{color:var(--teal);}
+  .equation .blank{display:inline-block;min-width:1.3em;border-bottom:5px solid var(--accent);color:var(--accent);vertical-align:bottom;}
+  .emoji-count{font-size:1.9rem;text-align:center;margin:4px 0 16px;line-height:1.6;letter-spacing:3px;word-break:break-word;}
+
+  /* CHOICES */
+  .choices-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:12px;}
+  .choices-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
+  .choices-grid-auto{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:12px;}
+  .choice-card{background:#FAFAFA;border:4px solid #E2E8F0;border-radius:20px;padding:14px 8px;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);text-align:center;user-select:none;position:relative;}
+  .choice-card:hover{border-color:var(--lion);background:#FFFAF0;transform:translateY(-5px) scale(1.04);box-shadow:0 10px 20px rgba(246,173,85,.25);}
+  .choice-card.correct{border-color:var(--correct);background:#F0FFF4;animation:correctPop .5s cubic-bezier(.36,.07,.19,.97);}
+  .choice-card.wrong{border-color:var(--wrong);background:#FFF5F5;animation:wrongShake .4s ease;}
+  .choice-card.disabled{cursor:default;}
+  @keyframes correctPop{0%{transform:scale(1)}40%{transform:scale(1.2) rotate(5deg)}70%{transform:scale(.95) rotate(-3deg)}100%{transform:scale(1) rotate(0)}}
+  @keyframes wrongShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px) rotate(-3deg)}40%{transform:translateX(10px) rotate(3deg)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+  .choice-num{font-size:2rem;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;display:block;}
+  .choice-emoji-row{font-size:1.5rem;display:block;margin-bottom:4px;line-height:1.4;}
+  .choice-sublabel{font-size:.8rem;font-weight:700;color:#718096;}
+  .check-icon{position:absolute;top:6px;right:6px;font-size:1.1rem;opacity:0;}
+  .choice-card.correct .check-icon,.choice-card.wrong .check-icon{opacity:1;}
+
+  /* TYPE INPUT */
+  .answer-input{width:100%;border:4px solid #E2E8F0;border-radius:16px;padding:12px 16px;font-size:2rem;font-family:'Nunito',sans-serif;font-weight:800;color:var(--text);outline:none;transition:border-color .2s;text-align:center;background:#FAFAFA;}
+  .answer-input:focus{border-color:var(--blue);background:white;}
+  .answer-input.correct-input{border-color:var(--correct);background:#F0FFF4;}
+  .answer-input.wrong-input{border-color:var(--wrong);background:#FFF5F5;}
+  .submit-btn{width:100%;margin-top:10px;background:linear-gradient(135deg,var(--accent),#553C9A);color:white;border:none;border-radius:16px;padding:13px;font-size:1.2rem;font-family:'Baloo 2',cursive;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(107,70,193,.4);transition:all .25s cubic-bezier(.34,1.56,.64,1);}
+  .submit-btn:hover{transform:translateY(-3px);}
+  .submit-btn:disabled{opacity:.5;cursor:default;transform:none;}
+
+  /* FEEDBACK */
+  .feedback-banner{border-radius:16px;padding:13px 18px;text-align:center;font-size:1.1rem;font-weight:800;margin-top:12px;animation:slideFeedback .4s cubic-bezier(.34,1.56,.64,1);display:none;}
+  .feedback-banner.show{display:block;}
+  .feedback-banner.correct{background:#F0FFF4;color:#276749;border:3px solid var(--correct);}
+  .feedback-banner.wrong{background:#FFF5F5;color:#9B2335;border:3px solid var(--wrong);}
+  @keyframes slideFeedback{from{transform:translateY(20px) scale(.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .next-btn{width:100%;margin-top:11px;background:linear-gradient(135deg,var(--lion),var(--orange));color:white;border:none;border-radius:16px;padding:13px;font-size:1.2rem;font-family:'Baloo 2',cursive;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(246,173,85,.4);transition:all .25s cubic-bezier(.34,1.56,.64,1);display:none;animation:nextBtnIn .4s cubic-bezier(.34,1.56,.64,1);}
+  .next-btn.show{display:block;}
+  @keyframes nextBtnIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+  .next-btn:hover{transform:translateY(-4px) scale(1.03);}
+
+  /* REPLAY */
+  .replay-bar{display:flex;justify-content:center;margin-bottom:14px;}
+  .replay-btn{background:linear-gradient(135deg,#667EEA,#764BA2);color:white;border:none;border-radius:999px;padding:9px 22px;font-size:1rem;font-family:'Baloo 2',cursive;font-weight:700;cursor:pointer;box-shadow:0 5px 14px rgba(102,126,234,.4);transition:all .25s cubic-bezier(.34,1.56,.64,1);display:inline-flex;align-items:center;gap:7px;}
+  .replay-btn:hover{transform:translateY(-3px) scale(1.06);}
+  .replay-btn.spinning{animation:replaySpin .4s ease;}
+  @keyframes replaySpin{0%{transform:scale(1) rotate(0)}50%{transform:scale(1.18) rotate(-20deg)}100%{transform:scale(1) rotate(0)}}
+  .replay-count{background:rgba(255,255,255,.25);border-radius:999px;padding:2px 8px;font-size:.85rem;font-weight:800;}
+
+  /* RESULTS */
+  .results-content{text-align:center;max-width:600px;width:100%;padding-top:20px;}
+  .results-mascot{font-size:7rem;animation:celebrateSpin 1s ease-in-out;}
+  @keyframes celebrateSpin{0%{transform:scale(0) rotate(-360deg)}100%{transform:scale(1) rotate(0)}}
+  .results-title{font-size:clamp(1.9rem,6vw,3rem);font-weight:800;color:var(--lion);text-shadow:3px 3px 0 rgba(0,0,0,.1);margin:10px 0 6px;}
+  .results-score-line{font-size:1.2rem;font-weight:700;color:var(--accent);margin-bottom:14px;}
+  .stars-display{font-size:2.8rem;letter-spacing:8px;margin-bottom:16px;animation:starsIn .6s .3s ease both;}
+  @keyframes starsIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+  .results-breakdown{background:white;border-radius:18px;padding:14px 18px;margin-bottom:18px;box-shadow:0 6px 18px var(--shadow);font-size:.98rem;font-weight:600;color:#718096;line-height:2;}
+  .results-breakdown strong{color:var(--text);}
+  .play-again-btn{background:linear-gradient(135deg,var(--correct),#276749);color:white;border:none;border-radius:999px;padding:14px 40px;font-size:1.3rem;font-family:'Baloo 2',cursive;font-weight:800;cursor:pointer;box-shadow:0 8px 24px rgba(72,187,120,.45);transition:all .25s cubic-bezier(.34,1.56,.64,1);margin:6px;}
+  .play-again-btn:hover{transform:translateY(-4px) scale(1.05);}
+  .next-level-btn{background:linear-gradient(135deg,var(--lion),#C05621);color:white;border:none;border-radius:999px;padding:14px 40px;font-size:1.3rem;font-family:'Baloo 2',cursive;font-weight:800;cursor:pointer;box-shadow:0 8px 24px rgba(246,173,85,.5);transition:all .25s cubic-bezier(.34,1.56,.64,1);margin:6px;display:none;}
+  .next-level-btn:hover{transform:translateY(-4px) scale(1.05);}
+  .next-level-btn.show{display:inline-block;}
+</style>
+</head>
+<body>
+<div class="sky-bg"></div>
+<div class="cloud cloud1"></div>
+<div class="cloud cloud2"></div>
+<div class="cloud cloud3"></div>
+
+<!-- WELCOME -->
+<div class="screen active" id="welcomeScreen">
+  <div class="mascot" onclick="mascotClick(this)">🦁</div>
+  <h1 class="welcome-title">Math<br>Adventure!</h1>
+  <p class="subtitle">Learn numbers & maths with Leo the Lion! 🌟</p>
+  <p class="mode-label">What do you want to practise?</p>
+  <div class="mode-selector">
+    <div class="mode-btn m-count" onclick="selectMode('count',this)">
+      <span class="mode-icon">🔢</span>
+      <span class="mode-name">Count & Match</span>
+      <span class="mode-desc">Count objects and match numbers to groups</span>
+    </div>
+    <div class="mode-btn m-calc" onclick="selectMode('calc',this)">
+      <span class="mode-icon">➕</span>
+      <span class="mode-name">Calculations</span>
+      <span class="mode-desc">Addition, subtraction and missing numbers</span>
+    </div>
+    <div class="mode-btn m-seq" onclick="selectMode('seq',this)">
+      <span class="mode-icon">➡️</span>
+      <span class="mode-name">Sequences</span>
+      <span class="mode-desc">What comes next in the pattern?</span>
+    </div>
+    <div class="mode-btn m-mixed" onclick="selectMode('mixed',this)">
+      <span class="mode-icon">🔀</span>
+      <span class="mode-name">Mixed</span>
+      <span class="mode-desc">All exercise types together</span>
+    </div>
+  </div>
+  <button class="start-btn" id="startBtn" onclick="goToLevelSelect()" disabled style="opacity:.5">Choose Level 🗺️</button>
+</div>
+
+<!-- LEVEL SELECT -->
+<div class="screen" id="levelSelectScreen">
+  <div style="width:100%;max-width:880px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <button class="ls-back" onclick="showScreen('welcomeScreen')">← Back</button>
+    <button class="ls-back" onclick="confirmResetProgress()" style="color:#E53E3E;">🗑️ Reset Progress</button>
+  </div>
+  <div class="ls-header">
+    <div style="font-size:3.5rem;animation:mascotBob 2s ease-in-out infinite;margin-bottom:4px">🦁</div>
+    <div class="ls-title">Choose Your Level</div>
+    <div class="ls-mode-badge" id="lsModeBadge">🔢 Count &amp; Match</div>
+    <div class="ls-sub" style="margin-top:8px">Complete a level to unlock the next one!</div>
+  </div>
+  <div class="levels-grid" id="levelsGrid"></div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="gameScreen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goBackToLevels()">← Levels</button>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="score-badge">⭐ <span id="scoreDisplay">0</span></div>
+    <div class="level-indicator" id="levelIndicator">Level 1</div>
+  </div>
+  <div class="question-card" id="questionCard"></div>
+</div>
+
+<!-- RESULTS -->
+<div class="screen" id="resultsScreen">
+  <div class="results-content">
+    <div class="results-mascot" id="resultsMascot">🦁</div>
+    <h2 class="results-title" id="resultsTitle">Fantastic!</h2>
+    <div class="stars-display" id="starsDisplay">⭐⭐⭐</div>
+    <div class="results-breakdown" id="resultsBreakdown"></div>
+    <p class="results-score-line" id="resultsScore"></p>
+    <button class="next-level-btn" id="nextLevelBtn" onclick="playNextLevel()">Next Level ➡️</button>
+    <button class="play-again-btn" onclick="replayLevel()">Try Again 🔄</button>
+    <button class="play-again-btn" style="background:linear-gradient(135deg,var(--blue),#2B6CB0)" onclick="goBackToLevels()">All Levels 🗺️</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  EXERCISE MODES
+//  count — counting & number matching only
+//  calc  — addition, subtraction, missing number
+//  seq   — sequences only
+//  mixed — all types together
+// ═══════════════════════════════════════════════
+const MODES = {
+  count: { label:'🔢 Count & Match' },
+  calc:  { label:'➕ Calculations'  },
+  seq:   { label:'➡️ Sequences'     },
+  mixed: { label:'🔀 Mixed'         },
+};
+
+// ═══════════════════════════════════════════════
+//  LEVEL DEFINITIONS — one set per mode
+// ═══════════════════════════════════════════════
+const LEVEL_DEFS = {
+  count: [
+    { id:1,  name:'Count to 3',      icon:'3️⃣' },
+    { id:2,  name:'Count to 5',      icon:'🖐️' },
+    { id:3,  name:'Count to 8',      icon:'🔢' },
+    { id:4,  name:'Count to 10',     icon:'🔟' },
+    { id:5,  name:'Count to 15',     icon:'🧮' },
+    { id:6,  name:'Count to 20',     icon:'💯' },
+    { id:7,  name:'Groups of 2',     icon:'👫' },
+    { id:8,  name:'Groups of 5',     icon:'✋' },
+    { id:9,  name:'Groups of 10',    icon:'🔟' },
+    { id:10, name:'Number Master',   icon:'🏆' },
+  ],
+  calc: [
+    { id:1,  name:'Add to 5',        icon:'➕' },
+    { id:2,  name:'Add to 10',       icon:'➕' },
+    { id:3,  name:'Take Away to 5',  icon:'➖' },
+    { id:4,  name:'Take Away to 10', icon:'➖' },
+    { id:5,  name:'Mix to 10',       icon:'🔀' },
+    { id:6,  name:'Missing Number',  icon:'❓' },
+    { id:7,  name:'Add to 20',       icon:'➕' },
+    { id:8,  name:'Take Away to 20', icon:'➖' },
+    { id:9,  name:'Times 2',         icon:'✖️' },
+    { id:10, name:'Times 5',         icon:'✖️' },
+  ],
+  seq: [
+    { id:1,  name:'Count by 1s',     icon:'1️⃣' },
+    { id:2,  name:'Count by 2s',     icon:'2️⃣' },
+    { id:3,  name:'Count by 5s',     icon:'5️⃣' },
+    { id:4,  name:'Count by 10s',    icon:'🔟' },
+    { id:5,  name:'Skip Count',      icon:'➡️' },
+    { id:6,  name:'Backwards by 1',  icon:'◀️' },
+    { id:7,  name:'Backwards by 2',  icon:'⏪' },
+    { id:8,  name:'Mixed Steps',     icon:'🔀' },
+    { id:9,  name:'Big Numbers',     icon:'💯' },
+    { id:10, name:'Sequence Master', icon:'🏆' },
+  ],
+  mixed: [
+    { id:1,  name:'Starter Mix',     icon:'🌟' },
+    { id:2,  name:'Easy Mix',        icon:'😊' },
+    { id:3,  name:'Number Fun',      icon:'🔢' },
+    { id:4,  name:'Challenge 1',     icon:'🎯' },
+    { id:5,  name:'Challenge 2',     icon:'🎯' },
+    { id:6,  name:'Big Mix',         icon:'🔀' },
+    { id:7,  name:'Expert Mix',      icon:'🧠' },
+    { id:8,  name:'Super Mix',       icon:'⚡' },
+    { id:9,  name:'Mega Mix',        icon:'💥' },
+    { id:10, name:'Grand Master',    icon:'🏆' },
+  ],
+};
+
+const COUNT_EMOJIS = ['🍎','🌟','🐶','🎈','🍕','🦋','⚽','🎀','🌈','🍦'];
+function ri(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function sh(a){ return [...a].sort(()=>Math.random()-.5); }
+function wrongNums(correct, count, min, max){
+  // Ensure the range is wide enough for count+1 distinct values
+  const needed = count + 1;
+  if(max - min + 1 < needed) max = min + needed - 1;
+  const s=new Set([correct]); let t=0;
+  while(s.size<needed&&t<300){ let n=correct+ri(-3,3); n=Math.max(min,Math.min(max,n)); if(n!==correct) s.add(n); t++; }
+  while(s.size<needed){ let n=ri(min,max); if(n!==correct) s.add(n); }
+  return sh([...s]).slice(0,needed);
+}
+
+// ═══════════════════════════════════════════════
+//  EXERCISE GENERATORS per level
+// ═══════════════════════════════════════════════
+function makeCountEx(levelId){
+  // Each level has a progressively larger max and different style
+  const cfg = [
+    {max:3,  style:'both'},   // L1: count to 3
+    {max:5,  style:'both'},   // L2: count to 5
+    {max:8,  style:'both'},   // L3: count to 8
+    {max:10, style:'both'},   // L4: count to 10
+    {max:15, style:'pick'},   // L5: count to 15 (pick number only — too many dots for emoji group)
+    {max:20, style:'pick'},   // L6: count to 20
+    {max:10, style:'group2'}, // L7: groups of 2 (show groups, pick total)
+    {max:10, style:'group5'}, // L8: groups of 5
+    {max:10, style:'group10'},// L9: groups of 10
+    {max:20, style:'both'},   // L10: master — full range
+  ][levelId-1] || {max:10, style:'both'};
+
+  const emoji = COUNT_EMOJIS[ri(0,COUNT_EMOJIS.length-1)];
+
+  if(cfg.style==='group2'){
+    const groups=ri(1,5), total=groups*2;
+    return {type:'count-pick', n:total, emoji, max:10, groupSize:2, groups};
+  }
+  if(cfg.style==='group5'){
+    const groups=ri(1,4), total=groups*5;
+    return {type:'count-pick', n:total, emoji, max:20, groupSize:5, groups};
+  }
+  if(cfg.style==='group10'){
+    const groups=ri(1,3), total=groups*10;
+    return {type:'count-pick', n:total, emoji, max:30, groupSize:10, groups};
+  }
+  const n=ri(1,cfg.max);
+  if(cfg.style==='pick') return {type:'count-pick', n, emoji, max:cfg.max};
+  return ri(0,1)===0
+    ? {type:'count-pick',  n, emoji, max:cfg.max}
+    : {type:'number-pick', n, emoji, max:cfg.max};
+}
+
+function makeCalcEx(levelId){
+  // Levels match calc LEVEL_DEFS exactly
+  if(levelId===1){ const a=ri(1,4),b=ri(1,5-a); return {type:'add-pick',a,b,answer:a+b}; }
+  if(levelId===2){ const a=ri(1,6),b=ri(1,10-a); return ri(0,1)?{type:'add-pick',a,b,answer:a+b}:{type:'add-type',a,b,answer:a+b}; }
+  if(levelId===3){ const a=ri(2,5),b=ri(1,a-1); return {type:'sub-pick',a,b,answer:a-b}; }
+  if(levelId===4){ const a=ri(3,10),b=ri(1,a-1); return ri(0,1)?{type:'sub-pick',a,b,answer:a-b}:{type:'sub-type',a,b,answer:a-b}; }
+  if(levelId===5){ const a=ri(1,6),b=ri(1,10-a); return ri(0,1)?{type:'add-pick',a,b,answer:a+b}:{type:'sub-pick',a:a+b,b,answer:a}; }
+  if(levelId===6){ const m=ri(1,8),b=ri(1,9-m); return ri(0,1)?{type:'missing-add',missing:m,b,total:m+b}:{type:'missing-sub',a:m+b,missing:m,rest:b}; }
+  if(levelId===7){ const a=ri(5,15),b=ri(1,20-a); return ri(0,1)?{type:'add-pick',a,b,answer:a+b,max:20}:{type:'add-type',a,b,answer:a+b}; }
+  if(levelId===8){ const a=ri(10,20),b=ri(1,a-5); return ri(0,1)?{type:'sub-pick',a,b,answer:a-b}:{type:'sub-type',a,b,answer:a-b}; }
+  if(levelId===9){ const n=ri(1,10); return {type:'multiply-pick',a:n,b:2,answer:n*2}; }
+  /* L10 */ const n=ri(1,10); return {type:'multiply-pick',a:n,b:5,answer:n*5};
+}
+
+function makeSeqEx(levelId){
+  // Levels match seq LEVEL_DEFS
+  if(levelId===1){ const s=ri(1,8); return {type:'sequence',seq:[s,s+1,s+2],answer:s+3}; }
+  if(levelId===2){ const s=ri(1,8)*2-1; return {type:'sequence',seq:[s,s+2,s+4],answer:s+6}; }
+  if(levelId===3){ const s=ri(1,4)*5; return {type:'sequence',seq:[s,s+5,s+10],answer:s+15}; }
+  if(levelId===4){ const s=ri(1,5)*10; return {type:'sequence',seq:[s,s+10,s+20],answer:s+30}; }
+  if(levelId===5){ const step=ri(2,4),s=ri(1,6); return {type:'sequence',seq:[s,s+step,s+step*2],answer:s+step*3}; }
+  if(levelId===6){ const s=ri(6,12); return {type:'sequence',seq:[s,s-1,s-2],answer:s-3}; }
+  if(levelId===7){ const s=ri(8,18); return {type:'sequence',seq:[s,s-2,s-4],answer:s-6}; }
+  if(levelId===8){ const step=ri(2,5)*[1,-1][ri(0,1)],s=ri(5,15); return {type:'sequence',seq:[s,s+step,s+step*2],answer:s+step*3}; }
+  if(levelId===9){ const step=ri(3,9),s=ri(10,40); return {type:'sequence',seq:[s,s+step,s+step*2],answer:s+step*3}; }
+  /* L10 */ const step=ri(2,10),s=ri(5,50); return {type:'sequence',seq:[s,s+step,s+step*2],answer:s+step*3};
+}
+
+function generateExercises(levelId, mode){
+  const exs=[];
+  for(let i=0;i<10;i++){
+    if(mode==='count')      exs.push(makeCountEx(levelId));
+    else if(mode==='calc')  exs.push(makeCalcEx(levelId));
+    else if(mode==='seq')   exs.push(makeSeqEx(levelId));
+    else {
+      // mixed: rotate through all types
+      const r=i%3;
+      if(r===0)      exs.push(makeCountEx(Math.min(levelId,6)));
+      else if(r===1) exs.push(makeCalcEx(Math.min(levelId,10)));
+      else           exs.push(makeSeqEx(Math.min(levelId,10)));
+    }
+  }
+  return exs;
+}
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let exerciseMode=null, currentLevelId=null, exercises=[], currentIdx=0, score=0, answered=false;
+let replayCounter=0;
+const speechSynth=window.speechSynthesis;
+let progress={count:{},calc:{},seq:{},mixed:{}};
+try{ const s=sessionStorage.getItem('mathprog2'); if(s) progress=JSON.parse(s); }catch(e){}
+function saveProgress(){ try{sessionStorage.setItem('mathprog2',JSON.stringify(progress));}catch(e){} }
+
+// ═══════════════════════════════════════════════
+//  WELCOME
+// ═══════════════════════════════════════════════
+function selectMode(mode,el){
+  exerciseMode=mode;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  const btn=document.getElementById('startBtn');
+  btn.disabled=false; btn.style.opacity='1';
+}
+function mascotClick(el){
+  el.style.animation='none'; void el.offsetWidth; el.style.animation='bounceIn .6s ease';
+  speakNum("Roar! Let's do some maths!");
+}
+function goToLevelSelect(){ if(!exerciseMode) return; renderLevelSelect(); showScreen('levelSelectScreen'); }
+
+// ═══════════════════════════════════════════════
+//  LEVEL SELECT
+// ═══════════════════════════════════════════════
+function renderLevelSelect(){
+  const mp=progress[exerciseMode]||{};
+  document.getElementById('lsModeBadge').textContent=MODES[exerciseMode].label;
+  document.getElementById('levelsGrid').innerHTML=LEVEL_DEFS[exerciseMode].map((lvl,i)=>{
+    const p=mp[lvl.id]||{}, stars=p.stars||0;
+    const prevDone=i===0||(mp[LEVEL_DEFS[exerciseMode][i-1].id]||{}).stars>0;
+    const locked=!prevDone, isNext=prevDone&&!stars;
+    const starStr='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+    return `<div class="level-card ${locked?'locked':''} ${stars?'completed':''} ${isNext?'current':''}"
+      onclick="${locked?'':('startLevel('+lvl.id+')')}">
+      ${isNext?'<div class="lc-new">NEW!</div>':''}
+      ${locked?'<div class="lc-lock">🔒</div>':''}
+      <span class="lc-icon">${lvl.icon}</span>
+      <div class="lc-num">Level ${lvl.id}</div>
+      <div class="lc-name">${lvl.name}</div>
+      <div class="lc-stars">${stars?starStr:(locked?'':'— — —')}</div>
+    </div>`;
+  }).join('');
+}
+
+function confirmResetProgress(){
+  if(confirm(`Reset all progress for "${MODES[exerciseMode].label}"? This cannot be undone.`)){
+    progress[exerciseMode]={}; saveProgress(); renderLevelSelect();
+  }
+}
+
+function startLevel(id){
+  currentLevelId=id;
+  exercises=generateExercises(id, exerciseMode);
+  currentIdx=0; score=0; answered=false;
+  document.getElementById('levelIndicator').textContent=`Lvl ${id}: ${LEVEL_DEFS[exerciseMode][id-1].name}`;
+  updateProgress(); renderExercise(); showScreen('gameScreen');
+}
+function goBackToLevels(){ if(speechSynth) speechSynth.cancel(); renderLevelSelect(); showScreen('levelSelectScreen'); }
+
+// ═══════════════════════════════════════════════
+//  GAME FLOW
+// ═══════════════════════════════════════════════
+function nextExercise(){ currentIdx++; if(currentIdx>=exercises.length){showResults();return;} answered=false; updateProgress(); renderExercise(); }
+function updateProgress(){ document.getElementById('progressBar').style.width=(currentIdx/exercises.length*100)+'%'; document.getElementById('scoreDisplay').textContent=score; }
+
+// ═══════════════════════════════════════════════
+//  RENDER DISPATCHER
+// ═══════════════════════════════════════════════
+function renderExercise(){
+  const ex=exercises[currentIdx], card=document.getElementById('questionCard');
+  const isFirst=currentIdx===0;
+  switch(ex.type){
+    case 'count-pick':    renderCountPick(ex,card,isFirst);    break;
+    case 'number-pick':   renderNumberPick(ex,card,isFirst);   break;
+    case 'add-pick':
+    case 'sub-pick':      renderCalcPick(ex,card,isFirst);     break;
+    case 'add-type':
+    case 'sub-type':      renderCalcType(ex,card,isFirst);     break;
+    case 'sequence':      renderSequence(ex,card,isFirst);     break;
+    case 'missing-add':
+    case 'missing-sub':   renderMissing(ex,card,isFirst);      break;
+    case 'multiply-pick': renderMultiply(ex,card,isFirst);     break;
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  RENDERERS
+// ═══════════════════════════════════════════════
+function renderCountPick(ex,card,isFirst){
+  const {n,emoji,max}=ex;
+  const choices=wrongNums(n,3,1,max);
+  const dots=Array(n).fill(emoji).join(' ');
+  card.innerHTML=`
+    <div class="question-text">How many ${emoji}s are there?</div>
+    <div class="emoji-count">${dots}</div>
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath('${n}',this)">🔊 Hear it <span class="replay-count" id="replayCount"></span></button></div>
+    <div class="choices-grid-4" id="choicesGrid">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,${c},${n},'${n}')"><span class="check-icon"></span><span class="choice-num">${c}</span></div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  updateReplayCount();
+}
+
+function renderNumberPick(ex,card,isFirst){
+  const {n,emoji,max}=ex;
+  const choices=wrongNums(n,3,1,max);
+  card.innerHTML=`
+    <div class="question-text">Which group has <span style="color:var(--accent)">${n}</span> ${emoji}s?</div>
+    <div class="big-number">${n}</div>
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath('${n}',this)">🔊 Hear it <span class="replay-count" id="replayCount"></span></button></div>
+    <div class="choices-grid-4" id="choicesGrid">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,${c},${n},'${n}')">
+        <span class="check-icon"></span>
+        <span class="choice-emoji-row">${Array(c).fill(emoji).join('')}</span>
+      </div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  updateReplayCount();
+}
+
+function renderCalcPick(ex,card,isFirst){
+  const {a,b,answer,type}=ex;
+  const op=type==='sub-pick'?'−':'+';
+  const opWord=type==='sub-pick'?'minus':'plus';
+  const maxAns=type==='sub-pick'?a:(ex.max||15);
+  const choices=wrongNums(answer,3,0,maxAns);
+  card.innerHTML=`
+    <div class="equation"><span>${a}</span> <span class="op">${op}</span> <span>${b}</span> <span class="eq">=</span> <span class="blank">?</span></div>
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath('${a} ${opWord} ${b}',this)">🔊 Hear it <span class="replay-count" id="replayCount"></span></button></div>
+    <div class="choices-grid-4" id="choicesGrid">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,${c},${answer},'${answer}')"><span class="check-icon"></span><span class="choice-num">${c}</span></div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  setTimeout(()=>{ speakNum(`${a} ${opWord} ${b} equals?`); updateReplayCount(); }, isFirst?1200:400);
+}
+
+function renderCalcType(ex,card,isFirst){
+  const {a,b,answer,type}=ex;
+  const op=type==='sub-type'?'−':'+';
+  const opWord=type==='sub-type'?'minus':'plus';
+  card.innerHTML=`
+    <div class="equation"><span>${a}</span> <span class="op">${op}</span> <span>${b}</span> <span class="eq">=</span> <span class="blank">?</span></div>
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath('${a} ${opWord} ${b}',this)">🔊 Hear it <span class="replay-count" id="replayCount"></span></button></div>
+    <input class="answer-input" id="answerInput" type="number" min="0" max="99" placeholder="?" onkeydown="if(event.key==='Enter')checkType(${answer})"/>
+    <button class="submit-btn" id="submitBtn" onclick="checkType(${answer})">✅ Check Answer</button>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  setTimeout(()=>{ speakNum(`${a} ${opWord} ${b} equals?`); updateReplayCount(); }, isFirst?1200:400);
+}
+
+function renderSequence(ex,card,isFirst){
+  const {seq,answer}=ex;
+  const choices=wrongNums(answer,3,1,30);
+  card.innerHTML=`
+    <div class="question-text">What comes next?</div>
+    <div class="equation">${seq.map(n=>`<span>${n}</span>`).join(' <span class="op">→</span> ')} <span class="op">→</span> <span class="blank">?</span></div>
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath('${seq.join(', ')}, then what',this)">🔊 Hear it <span class="replay-count" id="replayCount"></span></button></div>
+    <div class="choices-grid-4" id="choicesGrid">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,${c},${answer},'${answer}')"><span class="check-icon"></span><span class="choice-num">${c}</span></div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  setTimeout(()=>{ speakNum(`${seq.join(', ')}, what comes next?`); updateReplayCount(); }, isFirst?1200:400);
+}
+
+function renderMissing(ex,card,isFirst){
+  let eqHTML, speakText, answer;
+  if(ex.type==='missing-add'){
+    const{missing,b,total}=ex; answer=missing;
+    eqHTML=`<span class="blank">?</span> <span class="op">+</span> <span>${b}</span> <span class="eq">=</span> <span>${total}</span>`;
+    speakText=`What plus ${b} equals ${total}?`;
+  } else {
+    const{a,missing,rest}=ex; answer=missing;
+    eqHTML=`<span>${a}</span> <span class="op">−</span> <span class="blank">?</span> <span class="eq">=</span> <span>${rest}</span>`;
+    speakText=`${a} minus what equals ${rest}?`;
+  }
+  const choices=wrongNums(answer,3,0,20);
+  card.innerHTML=`
+    <div class="question-text">Find the missing number!</div>
+    <div class="equation">${eqHTML}</div>
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath('${speakText}',this)">🔊 Hear it <span class="replay-count" id="replayCount"></span></button></div>
+    <div class="choices-grid-4" id="choicesGrid">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,${c},${answer},'${answer}')"><span class="check-icon"></span><span class="choice-num">${c}</span></div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  setTimeout(()=>{ speakNum(speakText); updateReplayCount(); }, isFirst?1200:400);
+}
+
+function renderMultiply(ex,card,isFirst){
+  const{a,b,answer}=ex;
+  const choices=wrongNums(answer,3,1,55);
+  card.innerHTML=`
+    <div class="equation"><span>${a}</span> <span class="op">×</span> <span>${b}</span> <span class="eq">=</span> <span class="blank">?</span></div>
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath('${a} times ${b}',this)">🔊 Hear it <span class="replay-count" id="replayCount"></span></button></div>
+    <div class="choices-grid-4" id="choicesGrid">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,${c},${answer},'${answer}')"><span class="check-icon"></span><span class="choice-num">${c}</span></div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  setTimeout(()=>{ speakNum(`${a} times ${b} equals?`); updateReplayCount(); }, isFirst?1200:400);
+}
+
+// ═══════════════════════════════════════════════
+//  CHECK
+// ═══════════════════════════════════════════════
+function checkPick(el,chosen,correct,label){
+  if(answered) return; answered=true;
+  document.querySelectorAll('.choice-card').forEach(c=>c.classList.add('disabled'));
+  const ok=String(chosen)===String(correct);
+  if(ok){
+    el.classList.add('correct'); el.querySelector('.check-icon').textContent='✅';
+    score++; document.getElementById('scoreDisplay').textContent=score;
+    showFeedback(true,`🌟 Correct! The answer is ${label}!`);
+    spawnSparkles(el); speakSuccess();
+  } else {
+    el.classList.add('wrong'); el.querySelector('.check-icon').textContent='❌';
+    document.querySelectorAll('.choice-card').forEach(c=>{
+      const n=c.querySelector('.choice-num,.choice-sublabel');
+      if(n&&String(n.textContent.trim())===String(correct)){ c.classList.add('correct'); c.querySelector('.check-icon').textContent='✅'; }
+    });
+    showFeedback(false,`The answer was ${label}. Keep going! 💪`);
+    speakWrong(); setTimeout(()=>speakNum(`The answer is ${label}`),900);
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function checkType(correct){
+  if(answered) return;
+  const input=document.getElementById('answerInput');
+  const val=input.value.trim(); if(!val) return;
+  answered=true; input.disabled=true;
+  document.getElementById('submitBtn').disabled=true;
+  const ok=parseInt(val)===correct;
+  if(ok){
+    input.classList.add('correct-input'); score++;
+    document.getElementById('scoreDisplay').textContent=score;
+    showFeedback(true,`🌟 Correct! The answer is ${correct}!`);
+    spawnSparklesAt(input); speakSuccess();
+  } else {
+    input.classList.add('wrong-input');
+    showFeedback(false,`Almost! The answer was ${correct}. Keep going! 💪`);
+    speakWrong(); setTimeout(()=>speakNum(`The answer is ${correct}`),900);
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function showFeedback(ok,msg){
+  const b=document.getElementById('feedbackBanner');
+  b.className='feedback-banner show '+(ok?'correct':'wrong');
+  b.textContent=msg;
+}
+
+// ═══════════════════════════════════════════════
+//  RESULTS
+// ═══════════════════════════════════════════════
+function showResults(){
+  if(speechSynth) speechSynth.cancel();
+  const total=exercises.length, pct=score/total;
+  const stars=pct>=0.9?3:pct>=0.6?2:1;
+  const mp=progress[exerciseMode]; const prev=(mp[currentLevelId]||{}).stars||0;
+  mp[currentLevelId]={stars:Math.max(prev,stars),best:Math.max((mp[currentLevelId]||{}).best||0,score)};
+  saveProgress();
+  const lvl=LEVEL_DEFS[exerciseMode][currentLevelId-1], nextLvl=LEVEL_DEFS[exerciseMode][currentLevelId];
+  const canNext=nextLvl&&stars>=1;
+  const mascot=stars===3?'🏆':stars===2?'😄':'🦁';
+  const title=stars===3?'Fantastic! 🎉':stars===2?'Well done! 🌟':'Keep going! 💪';
+  const starStr='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('resultsMascot').textContent=mascot;
+  document.getElementById('resultsTitle').textContent=title;
+  document.getElementById('starsDisplay').textContent=starStr;
+  document.getElementById('resultsScore').textContent=`Score: ${score}/${total} · Level ${currentLevelId} — ${lvl.name}`;
+  document.getElementById('resultsBreakdown').innerHTML=
+    `<strong>${lvl.icon} ${lvl.name}</strong> · <em>${MODES[exerciseMode].label}</em><br>
+     You got <strong>${score} out of ${total}</strong> correct &nbsp;·&nbsp; ${starStr}<br>
+     ${canNext?`🔓 <strong>Level ${nextLvl.id} "${nextLvl.name}" unlocked in this mode!</strong>`:''}`;
+  const nb=document.getElementById('nextLevelBtn');
+  if(canNext){ nb.textContent=`Next: ${nextLvl.icon} ${nextLvl.name} ➡️`; nb.classList.add('show'); }
+  else nb.classList.remove('show');
+  if(stars===3){ spawnConfetti(); setTimeout(()=>speakNum('Fantastic! You are a maths superstar!'),500); }
+  else if(stars===2) setTimeout(()=>speakNum('Well done! Great job!'),500);
+  else setTimeout(()=>speakNum('Keep practising! You can do it!'),500);
+  showScreen('resultsScreen');
+}
+function replayLevel(){ startLevel(currentLevelId); }
+function playNextLevel(){ if(currentLevelId<LEVEL_DEFS[exerciseMode].length) startLevel(currentLevelId+1); }
+
+// ═══════════════════════════════════════════════
+//  AUDIO
+// ═══════════════════════════════════════════════
+function speakNum(text){
+  if(!speechSynth) return; speechSynth.cancel();
+  const u=new SpeechSynthesisUtterance(String(text));
+  u.lang='en-US'; u.rate=.85; u.pitch=1.1;
+  const v=speechSynth.getVoices().find(x=>x.lang.startsWith('en')&&/samantha|karen|moira|tessa/i.test(x.name))||speechSynth.getVoices().find(x=>x.lang.startsWith('en'));
+  if(v) u.voice=v;
+  speechSynth.speak(u);
+}
+function replayMath(text,btn){
+  replayCounter++; updateReplayCount();
+  if(btn){ btn.classList.remove('spinning'); void btn.offsetWidth; btn.classList.add('spinning'); setTimeout(()=>btn.classList.remove('spinning'),400); }
+  speakNum(text);
+}
+function updateReplayCount(){ const el=document.getElementById('replayCount'); if(el) el.textContent=replayCounter>0?`×${replayCounter}`:''; }
+function speakSuccess(){ const p=['Fantastic!','Brilliant!','Well done!','Correct!','Amazing!','Super!']; setTimeout(()=>speakNum(p[Math.floor(Math.random()*p.length)]),300); }
+function speakWrong(){ const p=['Try again!','Not quite!','Almost there!','Keep going!']; setTimeout(()=>speakNum(p[Math.floor(Math.random()*p.length)]),300); }
+if(speechSynth) speechSynth.onvoiceschanged=()=>speechSynth.getVoices();
+
+// ═══════════════════════════════════════════════
+//  SPARKLES & CONFETTI
+// ═══════════════════════════════════════════════
+function spawnSparkles(el){ const r=el.getBoundingClientRect(); spawnXY(r.left+r.width/2,r.top+r.height/2); }
+function spawnSparklesAt(el){ const r=el.getBoundingClientRect(); spawnXY(r.left+r.width/2,r.top); }
+function spawnXY(x,y){
+  const em=['⭐','✨','🌟','💫','🎉','🔢','➕'];
+  for(let i=0;i<8;i++) setTimeout(()=>{ const s=document.createElement('div'); s.className='sparkle'; s.textContent=em[Math.floor(Math.random()*em.length)]; s.style.left=(x+(Math.random()-.5)*120)+'px'; s.style.top=(y+(Math.random()-.5)*60)+'px'; document.body.appendChild(s); setTimeout(()=>s.remove(),1600); },i*80);
+}
+function spawnConfetti(){
+  const cl=['#F6AD55','#FFD700','#48BB78','#6B46C1','#4299E1','#ED64A6','#FC8181'];
+  for(let i=0;i<70;i++) setTimeout(()=>{ const c=document.createElement('div'); c.className='confetti-piece'; c.style.left=Math.random()*100+'vw'; c.style.top='-20px'; c.style.background=cl[Math.floor(Math.random()*cl.length)]; c.style.transform=`rotate(${Math.random()*360}deg)`; c.style.animationDuration=(1.5+Math.random()*2)+'s'; c.style.animationDelay=(Math.random()*.5)+'s'; document.body.appendChild(c); setTimeout(()=>c.remove(),4000); },i*25);
+}
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+</script>
+</body>
+</html>
