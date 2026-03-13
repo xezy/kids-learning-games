@@ -142,6 +142,22 @@
   .replay-btn.spinning{animation:replaySpin .4s ease;}
   @keyframes replaySpin{0%{transform:scale(1) rotate(0)}50%{transform:scale(1.18) rotate(-20deg)}100%{transform:scale(1) rotate(0)}}
   .replay-count{background:rgba(255,255,255,.25);border-radius:999px;padding:2px 8px;font-size:.85rem;font-weight:800;}
+  /* NEW EXERCISE TYPES */
+  .sentence-stem{font-size:clamp(1.3rem,4vw,2rem);font-weight:800;color:var(--text);text-align:center;background:linear-gradient(135deg,#EBF8FF,#E9D8FD);border-radius:18px;padding:14px 20px;margin-bottom:18px;line-height:1.4;}
+  .sentence-blank{display:inline-block;min-width:90px;border-bottom:4px solid var(--fox);color:var(--fox);padding:0 6px;}
+  .pairs-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  .pair-card{background:#FAFAFA;border:4px solid #E2E8F0;border-radius:18px;padding:12px 8px;cursor:pointer;text-align:center;transition:all .2s cubic-bezier(.34,1.56,.64,1);user-select:none;position:relative;}
+  .pair-card:hover:not(.matched):not(.disabled){border-color:var(--fox);background:#FFF5F0;transform:translateY(-3px);}
+  .pair-card.selected{border-color:var(--accent);background:#EBF8FF;transform:scale(1.06);box-shadow:0 0 0 4px rgba(107,70,193,.2);}
+  .pair-card.matched{border-color:var(--correct);background:#F0FFF4;cursor:default;animation:correctPop .4s ease;}
+  .pair-card.shake{animation:wrongShake .4s ease;}
+  .pair-card .pair-emoji{font-size:2.4rem;display:block;}
+  .pair-card .pair-word{font-size:1rem;font-weight:800;color:var(--text);}
+  .pairs-progress{text-align:center;font-size:.9rem;font-weight:700;color:#718096;margin-bottom:8px;}
+  .scramble-display{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:14px 0;padding:14px;background:linear-gradient(135deg,#FFF5F0,#FFF9F0);border-radius:18px;}
+  .scramble-tile{background:white;border:3px solid var(--fox);border-radius:12px;width:46px;height:52px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:900;color:var(--fox);box-shadow:0 4px 10px rgba(255,107,53,.2);font-family:'Nunito',sans-serif;}
+  .translate-flag{font-size:2.2rem;display:block;text-align:center;margin-bottom:6px;}
+  .translate-word{font-size:clamp(1.6rem,5vw,2.6rem);font-weight:900;color:var(--accent);text-align:center;margin-bottom:16px;letter-spacing:1px;}
   /* RESULTS */
   .results-content{text-align:center;max-width:600px;width:100%;padding-top:20px;}
   .results-mascot{font-size:7rem;animation:celebrateSpin 1s ease-in-out;}
@@ -555,18 +571,84 @@ function startLevel(id){
 function goBackToLevels(){ if(speechSynth) speechSynth.cancel(); renderLevelSelect(); showScreen('levelSelectScreen'); setTimeout(()=>{const el=document.querySelector('.path-stop.ps-next');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},200); }
 
 // ═══════════════════════════════════════════════
-//  BUILD EXERCISES — driven by exerciseMode
+//  BUILD EXERCISES — 6 types rotating through level words
 // ═══════════════════════════════════════════════
+// Sentence templates per level theme
+const SENTENCES = {
+  1:[ // Animals
+    {de:'Das ist ein {word}.',          en:'That is a {word}.'},
+    {de:'Ich sehe einen {word}.',       en:'I see a {word}.'},
+    {de:'Der {word} ist süß.',          en:'The {word} is cute.'},
+  ],
+  2:[ // Food
+    {de:'Ich esse einen {word}.',       en:'I eat a {word}.'},
+    {de:'Das schmeckt wie {word}.',     en:'That tastes like {word}.'},
+    {de:'Magst du {word}?',            en:'Do you like {word}?'},
+  ],
+  3:[ // Nature
+    {de:'Ich sehe eine {word}.',        en:'I see a {word}.'},
+    {de:'Die {word} ist schön.',        en:'The {word} is beautiful.'},
+    {de:'Es gibt viel {word} hier.',    en:'There is a lot of {word} here.'},
+  ],
+  4:[ // Home
+    {de:'Wir haben ein {word}.',        en:'We have a {word}.'},
+    {de:'Das {word} ist groß.',         en:'The {word} is big.'},
+    {de:'Ich öffne das {word}.',        en:'I open the {word}.'},
+  ],
+  5:[ // Transport
+    {de:'Ich fahre mit dem {word}.',    en:'I travel by {word}.'},
+    {de:'Das {word} ist schnell.',      en:'The {word} is fast.'},
+    {de:'Ein {word} kommt!',           en:'A {word} is coming!'},
+  ],
+  6:[ // Body
+    {de:'Mein {word} tut weh.',        en:'My {word} hurts.'},
+    {de:'Ich wasche meine {word}.',     en:'I wash my {word}.'},
+    {de:'Der {word} ist klein.',        en:'The {word} is small.'},
+  ],
+  7:[ // Clothes
+    {de:'Ich trage ein {word}.',        en:'I wear a {word}.'},
+    {de:'Das {word} ist rot.',          en:'The {word} is red.'},
+    {de:'Wo ist mein {word}?',         en:'Where is my {word}?'},
+  ],
+  8:[ // Colours
+    {de:'Das ist {word}.',             en:'That is {word}.'},
+    {de:'Ich mag die Farbe {word}.',   en:'I like the colour {word}.'},
+    {de:'Der Himmel ist {word}.',      en:'The sky is {word}.'},
+  ],
+  9:[ // School
+    {de:'Ich brauche einen {word}.',   en:'I need a {word}.'},
+    {de:'Das {word} ist auf dem Tisch.',en:'The {word} is on the table.'},
+    {de:'Mein {word} ist kaputt.',     en:'My {word} is broken.'},
+  ],
+  10:[ // Adventure
+    {de:'Es gibt einen {word} hier!',  en:'There is a {word} here!'},
+    {de:'Der {word} ist mächtig.',     en:'The {word} is mighty.'},
+    {de:'Ich suche den {word}.',       en:'I search for the {word}.'},
+  ],
+};
+
 function buildExercises(){
   const pool=[...currentLevel.words].sort(()=>Math.random()-.5);
   exercises=[];
+
+  // picture mode rotation: image-pick, sentence-pick, spell-pick, translate-pick
+  // listen  mode rotation: listen-type, translate-pick, listen-type, sentence-pick
+  // mixed   mode rotation: all 5 single-word types cycling
+  const PICTURE_SEQ=['image-pick','sentence-pick','spell-pick','translate-pick'];
+  const LISTEN_SEQ =['listen-type','translate-pick','listen-type','sentence-pick'];
+  const MIXED_SEQ  =['image-pick','listen-type','sentence-pick','spell-pick','translate-pick'];
+
   pool.forEach((item,i)=>{
-    let type;
-    if(exerciseMode==='picture')     type='image-pick';
-    else if(exerciseMode==='listen') type='listen-type';
-    else                             type=(i%2===0?'image-pick':'listen-type'); // mixed
-    exercises.push({type, target:item});
+    let seq;
+    if(exerciseMode==='picture')     seq=PICTURE_SEQ;
+    else if(exerciseMode==='listen') seq=LISTEN_SEQ;
+    else                             seq=MIXED_SEQ;
+    exercises.push({type:seq[i%seq.length], target:item});
   });
+
+  // Inject ONE match-pairs block (4 words) at position 2 — works in all modes
+  const pairWords=pool.slice(0,4);
+  exercises.splice(2, 0, {type:'match-pairs', targets:pairWords});
 }
 
 // ═══════════════════════════════════════════════
@@ -576,12 +658,19 @@ function nextExercise(){ currentIdx++; if(currentIdx>=exercises.length){showResu
 function updateProgress(){ document.getElementById('progressBar').style.width=(currentIdx/exercises.length*100)+'%'; document.getElementById('scoreDisplay').textContent=score; }
 
 // ═══════════════════════════════════════════════
-//  RENDER
+//  RENDER DISPATCHER
 // ═══════════════════════════════════════════════
 function renderExercise(){
   const ex=exercises[currentIdx], card=document.getElementById('questionCard');
-  if(ex.type==='image-pick') renderImagePick(ex,card);
-  else renderListenType(ex,card);
+  document.getElementById('questionCard').className='question-card';
+  switch(ex.type){
+    case 'image-pick':     renderImagePick(ex,card);    break;
+    case 'listen-type':    renderListenType(ex,card);   break;
+    case 'sentence-pick':  renderSentencePick(ex,card); break;
+    case 'match-pairs':    renderMatchPairs(ex,card);   break;
+    case 'spell-pick':     renderSpellPick(ex,card);    break;
+    case 'translate-pick': renderTranslatePick(ex,card);break;
+  }
 }
 
 function renderImagePick(ex,card){
@@ -628,9 +717,164 @@ function renderListenType(ex,card){
   setTimeout(()=>{ replayWord(t.word, document.getElementById('replayBtn')); }, currentIdx===0?1200:600);
 }
 
-// ═══════════════════════════════════════════════
-//  CHECK
-// ═══════════════════════════════════════════════
+// ── SENTENCE PICK ────────────────────────────────
+function renderSentencePick(ex,card){
+  const t=ex.target;
+  const templates=SENTENCES[currentLevel.id]||SENTENCES[1];
+  const tmpl=templates[Math.floor(Math.random()*templates.length)];
+  const sentence=tmpl.de.replace('{word}','___');
+  const hint=tmpl.en.replace('{word}', t.word);
+  const others=currentLevel.words.filter(v=>v.word!==t.word).sort(()=>Math.random()-.5).slice(0,3);
+  const choices=[...others,t].sort(()=>Math.random()-.5);
+  card.innerHTML=`
+    <div style="text-align:center;font-size:5rem;margin-bottom:8px;animation:gentlePulse 2s ease-in-out infinite">${t.emoji}</div>
+    <div class="sentence-stem">🇩🇪 ${sentence.replace('___',`<span class="sentence-blank">___</span>`)}</div>
+    <div style="text-align:center;font-size:.9rem;color:#A0AEC0;font-style:italic;margin-bottom:14px;">💡 ${hint.replace(t.word,'___')}</div>
+    <div class="choices-grid" style="grid-template-columns:repeat(2,1fr)">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,'${c.word}','${t.word}','${t.emoji}')">
+        <span class="check-icon"></span>
+        <span class="choice-emoji" style="font-size:2rem">${c.emoji}</span>
+        <span class="choice-word">${c.word}</span></div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0; updateReplayCount();
+  // speak the full sentence with blank spoken
+  const spoken=tmpl.de.replace('{word}', t.word);
+  setTimeout(()=>{ const u=new SpeechSynthesisUtterance(spoken); u.lang='de-DE'; u.rate=.75; u.pitch=1.1; speechSynth.speak(u); },600);
+}
+
+// ── MATCH PAIRS ──────────────────────────────────
+let pairSelected=null, pairMatched=0;
+function renderMatchPairs(ex,card){
+  const words=ex.targets;
+  pairSelected=null; pairMatched=0;
+  // Build shuffled emoji column and word column
+  const emojiOrder=[...words].sort(()=>Math.random()-.5);
+  const wordOrder=[...words].sort(()=>Math.random()-.5);
+  card.innerHTML=`
+    <div class="question-text">🔗 Match the pairs!</div>
+    <div class="pairs-progress" id="pairsProgress">Match 0 of ${words.length}</div>
+    <div class="pairs-grid">
+      ${emojiOrder.map(w=>`<div class="pair-card" id="ep_${w.word}" data-key="${w.word}" data-side="emoji" onclick="handlePairClick(this)">
+        <span class="pair-emoji">${w.emoji}</span>
+      </div>`).join('')}
+      ${wordOrder.map(w=>`<div class="pair-card" id="wp_${w.word}" data-key="${w.word}" data-side="word" onclick="handlePairClick(this)">
+        <span class="pair-word">${w.word}</span>
+      </div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+}
+
+function handlePairClick(el){
+  if(el.classList.contains('matched')||el.classList.contains('disabled')) return;
+  const total=exercises[currentIdx].targets.length;
+  if(!pairSelected){
+    document.querySelectorAll('.pair-card.selected').forEach(c=>c.classList.remove('selected'));
+    el.classList.add('selected');
+    pairSelected=el;
+    speakGerman(el.dataset.key);
+  } else {
+    if(pairSelected===el){ el.classList.remove('selected'); pairSelected=null; return; }
+    if(pairSelected.dataset.side===el.dataset.side){
+      // same side — switch selection
+      pairSelected.classList.remove('selected');
+      el.classList.add('selected');
+      pairSelected=el;
+      return;
+    }
+    if(pairSelected.dataset.key===el.dataset.key){
+      // Correct match!
+      [pairSelected,el].forEach(c=>{ c.classList.remove('selected'); c.classList.add('matched'); c.onclick=null; });
+      pairMatched++;
+      document.getElementById('pairsProgress').textContent=`Match ${pairMatched} of ${total}`;
+      speakSuccess();
+      if(pairMatched===total){
+        score++; document.getElementById('scoreDisplay').textContent=score;
+        showFeedback(true,'🎉 Alle Paare gefunden! Wunderbar!');
+        spawnConfetti();
+        document.getElementById('nextBtn').classList.add('show');
+        answered=true;
+      }
+    } else {
+      // Wrong — shake both
+      [pairSelected,el].forEach(c=>{ c.classList.remove('selected'); c.classList.add('shake'); setTimeout(()=>c.classList.remove('shake'),450); });
+      speakWrong();
+    }
+    pairSelected=null;
+  }
+}
+
+// ── SPELL PICK ───────────────────────────────────
+function renderSpellPick(ex,card){
+  const t=ex.target;
+  // Scramble the letters (guaranteed different order)
+  let letters=[...t.word];
+  do { letters.sort(()=>Math.random()-.5); } while(letters.join('')===t.word && t.word.length>1);
+  const others=currentLevel.words.filter(v=>v.word!==t.word).sort(()=>Math.random()-.5).slice(0,3);
+  const choices=[...others,t].sort(()=>Math.random()-.5);
+  card.innerHTML=`
+    <div style="text-align:center;font-size:5rem;margin-bottom:6px;animation:gentlePulse 2s ease-in-out infinite">${t.emoji}</div>
+    <div class="question-text">🔤 Unscramble the letters:</div>
+    <div class="scramble-display">
+      ${letters.map(l=>`<div class="scramble-tile">${l}</div>`).join('')}
+    </div>
+    <div class="choices-grid" style="grid-template-columns:repeat(2,1fr)">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,'${c.word}','${t.word}','${t.emoji}')">
+        <span class="check-icon"></span>
+        <span class="choice-word" style="font-size:1.4rem">${c.word}</span></div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0; updateReplayCount();
+}
+
+// ── TRANSLATE PICK ───────────────────────────────
+// English translations for each word
+const EN_TRANS={
+  'Hund':'Dog','Katze':'Cat','Vogel':'Bird','Fisch':'Fish','Pferd':'Horse','Kuh':'Cow',
+  'Schwein':'Pig','Schaf':'Sheep','Ente':'Duck','Hase':'Rabbit',
+  'Apfel':'Apple','Banane':'Banana','Brot':'Bread','Milch':'Milk','Ei':'Egg','Käse':'Cheese',
+  'Kuchen':'Cake','Pizza':'Pizza','Suppe':'Soup','Karotte':'Carrot',
+  'Baum':'Tree','Blume':'Flower','Sonne':'Sun','Mond':'Moon','Stern':'Star','Wasser':'Water',
+  'Feuer':'Fire','Berg':'Mountain','Wolke':'Cloud','Regen':'Rain',
+  'Haus':'House','Tür':'Door','Fenster':'Window','Bett':'Bed','Stuhl':'Chair','Lampe':'Lamp',
+  'Buch':'Book','Uhr':'Clock','Tasse':'Cup','Schloss':'Lock',
+  'Auto':'Car','Zug':'Train','Bus':'Bus','Flugzeug':'Aeroplane','Schiff':'Ship','Fahrrad':'Bicycle',
+  'Traktor':'Tractor','Rakete':'Rocket','Hubschrauber':'Helicopter','Boot':'Boat',
+  'Auge':'Eye','Nase':'Nose','Mund':'Mouth','Ohr':'Ear','Hand':'Hand','Fuß':'Foot',
+  'Herz':'Heart','Zahn':'Tooth','Knie':'Knee','Schulter':'Shoulder',
+  'Hemd':'Shirt','Hose':'Trousers','Schuhe':'Shoes','Hut':'Hat','Mantel':'Coat','Kleid':'Dress',
+  'Socken':'Socks','Handschuhe':'Gloves','Mütze':'Cap','Gürtel':'Belt',
+  'Rot':'Red','Blau':'Blue','Grün':'Green','Gelb':'Yellow','Orange':'Orange','Lila':'Purple',
+  'Weiß':'White','Schwarz':'Black','Rosa':'Pink','Braun':'Brown',
+  'Stift':'Pencil','Schere':'Scissors','Lineal':'Ruler','Tafel':'Board','Schule':'School',
+  'Lehrer':'Teacher','Rucksack':'Backpack','Papier':'Paper','Farbe':'Paint',
+  'Drachen':'Dragon','Burg':'Castle','Schatz':'Treasure','Zauberer':'Wizard','Einhorn':'Unicorn',
+  'Pirat':'Pirate','Roboter':'Robot','Alien':'Alien','Superheld':'Superhero','Prinzessin':'Princess',
+};
+function renderTranslatePick(ex,card){
+  const t=ex.target;
+  const enWord=EN_TRANS[t.word]||t.word;
+  const others=currentLevel.words.filter(v=>v.word!==t.word).sort(()=>Math.random()-.5).slice(0,3);
+  const choices=[...others,t].sort(()=>Math.random()-.5);
+  card.innerHTML=`
+    <div class="translate-flag">🇬🇧</div>
+    <div class="translate-word">${enWord}</div>
+    <div style="text-align:center;color:#718096;font-size:.95rem;font-weight:700;margin-bottom:14px;">How do you say this in German? 🇩🇪</div>
+    <div class="choices-grid" style="grid-template-columns:repeat(2,1fr)">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,'${c.word}','${t.word}','${t.emoji}')">
+        <span class="check-icon"></span>
+        <span class="choice-emoji" style="font-size:2rem">${c.emoji}</span>
+        <span class="choice-word">${c.word}</span></div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0; updateReplayCount();
+  // speak English word to help
+  setTimeout(()=>{ speak(enWord); },400);
+}
 function checkPick(el,chosen,correct,correctEmoji){
   if(answered) return; answered=true;
   speakGerman(chosen);
@@ -715,9 +959,9 @@ function showResults(){
   const nb=document.getElementById('nextLevelBtn');
   if(canNext){ nb.textContent=`Next: ${nextLvl.icon} ${nextLvl.name} ➡️`; nb.classList.add('show'); }
   else nb.classList.remove('show');
-  if(stars===3){ spawnConfetti(); setTimeout(()=>{const u=new SpeechSynthesisUtterance('Fantastisch! Du bist ein Superstar!'); u.lang='de-DE';u.rate=.85;u.pitch=1.2; speechSynth.speak(u);},500); }
-  else if(stars===2) setTimeout(()=>{const u=new SpeechSynthesisUtterance('Sehr gut gemacht!'); u.lang='de-DE';u.rate=.85; speechSynth.speak(u);},500);
-  else setTimeout(()=>{const u=new SpeechSynthesisUtterance('Übe weiter! Du schaffst das!'); u.lang='de-DE';u.rate=.85; speechSynth.speak(u);},500);
+  if(stars===3){ spawnConfetti(); speakResults(3); }
+  else if(stars===2) speakResults(2);
+  else speakResults(1);
   showScreen('resultsScreen');
 }
 function replayLevel(){ startLevel(currentLevel.id); }
@@ -804,8 +1048,12 @@ function replayWord(word,btn){
   setTimeout(()=>{ if(wave) wave.style.display='none'; },3000);
 }
 function updateReplayCount(){ const el=document.getElementById('replayCount'); if(!el) return; el.textContent=replayCounter>0?`×${replayCounter}`:''; }
-function speakSuccess(){ const p=['Super!','Wunderbar!','Sehr gut!','Toll!','Klasse!','Ausgezeichnet!']; setTimeout(()=>{const u=new SpeechSynthesisUtterance(p[Math.floor(Math.random()*p.length)]); u.lang='de-DE';u.rate=.9;u.pitch=1.3; speechSynth.speak(u);},300); }
+function speakSuccess(){ /* silent during game — praise only at results */ }
 function speakWrong(){ const p=['Versuche es nochmal!','Nicht ganz!','Fast richtig!']; setTimeout(()=>{const u=new SpeechSynthesisUtterance(p[Math.floor(Math.random()*p.length)]); u.lang='de-DE';u.rate=.85;u.pitch=.9; speechSynth.speak(u);},300); }
+function speakResults(stars){ 
+  const msgs={ 3:'Fantastisch! Du bist ein Superstar!', 2:'Sehr gut gemacht!', 1:'Übe weiter! Du schaffst das!' };
+  setTimeout(()=>{const u=new SpeechSynthesisUtterance(msgs[stars]||msgs[1]); u.lang='de-DE';u.rate=.85;u.pitch=stars===3?1.2:1.0; speechSynth.speak(u);},500);
+}
 if(speechSynth) speechSynth.onvoiceschanged=()=>speechSynth.getVoices();
 
 // ═══════════════════════════════════════════════
