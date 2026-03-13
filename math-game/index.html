@@ -173,6 +173,34 @@
   @keyframes replaySpin{0%{transform:scale(1) rotate(0)}50%{transform:scale(1.18) rotate(-20deg)}100%{transform:scale(1) rotate(0)}}
   .replay-count{background:rgba(255,255,255,.25);border-radius:999px;padding:2px 8px;font-size:.85rem;font-weight:800;}
 
+  /* NEW EXERCISE TYPES */
+  .word-problem-box{background:linear-gradient(135deg,#EBF8FF,#E9D8FD);border-radius:22px;padding:18px 20px;margin-bottom:18px;font-size:clamp(1.1rem,3.5vw,1.5rem);font-weight:800;color:var(--text);line-height:1.6;text-align:center;}
+  .word-problem-scene{font-size:3.2rem;display:block;margin-bottom:8px;letter-spacing:4px;}
+  .compare-row{display:flex;align-items:center;justify-content:center;gap:18px;margin:10px 0 20px;}
+  .compare-num{width:90px;height:90px;background:linear-gradient(135deg,var(--accent),#553C9A);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:3rem;font-weight:900;color:white;font-family:'Nunito',sans-serif;box-shadow:0 8px 24px rgba(107,70,193,.35);}
+  .compare-gap{width:56px;height:56px;border:5px dashed #CBD5E0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:#CBD5E0;}
+  .compare-choices{display:flex;justify-content:center;gap:14px;margin-bottom:14px;}
+  .compare-btn{width:80px;height:80px;border:4px solid #E2E8F0;border-radius:20px;background:#FAFAFA;font-size:2.2rem;font-weight:900;color:var(--text);font-family:'Nunito',sans-serif;cursor:pointer;transition:all .25s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;justify-content:center;}
+  .compare-btn:hover{border-color:var(--lion);background:#FFFAF0;transform:translateY(-4px) scale(1.08);}
+  .compare-btn.correct{border-color:var(--correct);background:#F0FFF4;animation:correctPop .5s ease;}
+  .compare-btn.wrong{border-color:var(--wrong);background:#FFF5F5;animation:wrongShake .4s ease;}
+  .bond-diagram{display:flex;flex-direction:column;align-items:center;gap:6px;margin:10px 0 18px;}
+  .bond-total{width:90px;height:60px;background:linear-gradient(135deg,var(--lion),#C05621);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:900;color:white;font-family:'Nunito',sans-serif;box-shadow:0 6px 18px rgba(246,173,85,.4);}
+  .bond-arms{display:flex;gap:24px;align-items:flex-start;padding-top:4px;}
+  .bond-arm{display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .bond-line{width:2px;height:28px;background:#CBD5E0;}
+  .bond-part{width:76px;height:55px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:900;font-family:'Nunito',sans-serif;}
+  .bond-known{background:#EBF8FF;border:3px solid #90CDF4;color:var(--accent);}
+  .bond-blank{background:#FAFAFA;border:4px dashed #CBD5E0;color:#CBD5E0;}
+  .clock-wrap{display:flex;justify-content:center;margin:6px 0 18px;}
+  .clock-choices{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;}
+  .clock-choice{background:#FAFAFA;border:4px solid #E2E8F0;border-radius:18px;padding:14px 8px;cursor:pointer;text-align:center;transition:all .25s cubic-bezier(.34,1.56,.64,1);font-size:1.3rem;font-weight:800;color:var(--text);font-family:'Nunito',sans-serif;position:relative;}
+  .clock-choice:hover{border-color:var(--lion);background:#FFFAF0;transform:translateY(-4px);}
+  .clock-choice.correct{border-color:var(--correct);background:#F0FFF4;animation:correctPop .5s ease;}
+  .clock-choice.wrong{border-color:var(--wrong);background:#FFF5F5;animation:wrongShake .4s ease;}
+  .clock-choice .check-icon{position:absolute;top:6px;right:8px;font-size:1rem;opacity:0;}
+  .clock-choice.correct .check-icon,.clock-choice.wrong .check-icon{opacity:1;}
+
   /* RESULTS */
   .results-content{text-align:center;max-width:600px;width:100%;padding-top:20px;}
   .results-mascot{font-size:7rem;animation:celebrateSpin 1s ease-in-out;}
@@ -452,18 +480,100 @@ function makeSeqEx(levelId){
   /* L10 */ const step=ri(2,10),s=ri(5,50); return {type:'sequence',seq:[s,s+step,s+step*2],answer:s+step*3};
 }
 
+// ── WORD PROBLEM generator ──────────────────────
+const WP_NAMES=['Leo','Mia','Tom','Zoe','Sam','Lily'];
+const WP_EMOJIS=['🍎','🍊','⭐','🐟','🎈','🌸','🍪','🍭','🎲','🪀'];
+function makeWordProblem(levelId){
+  const name=WP_NAMES[ri(0,WP_NAMES.length-1)];
+  const em=WP_EMOJIS[ri(0,WP_EMOJIS.length-1)];
+  const maxN=Math.min(4+levelId,15);
+  const kind=ri(0,2); // 0=add, 1=sub, 2=share
+  if(kind===0){
+    const a=ri(1,Math.floor(maxN/2)), b=ri(1,maxN-a);
+    const ans=a+b;
+    return {type:'word-problem',answer:ans,max:maxN+5,
+      scene:Array(a).fill(em).join('')+' + '+Array(b).fill(em).join(''),
+      text:`${name} has ${a} ${em} and finds ${b} more. How many ${em} altogether?`};
+  } else if(kind===1){
+    const total=ri(2,maxN), take=ri(1,total-1);
+    const ans=total-take;
+    return {type:'word-problem',answer:ans,max:total,
+      scene:Array(total).fill(em).join(''),
+      text:`${name} has ${total} ${em} and gives away ${take}. How many ${em} are left?`};
+  } else {
+    const perGroup=ri(2,4), groups=ri(2,Math.min(4,Math.floor(maxN/perGroup)));
+    const ans=perGroup*groups;
+    return {type:'word-problem',answer:ans,max:ans+6,
+      scene:Array(groups).fill(Array(perGroup).fill(em).join('')).join('  '),
+      text:`${name} has ${groups} bags with ${perGroup} ${em} each. How many ${em} in total?`};
+  }
+}
+
+// ── COMPARE generator ────────────────────────────
+function makeCompare(levelId){
+  const maxN=Math.min(5+levelId*2,50);
+  const a=ri(1,maxN), b=ri(1,maxN);
+  const sym=a<b?'<':a>b?'>':'=';
+  return {type:'compare-nums',a,b,answer:sym};
+}
+
+// ── NUMBER BOND generator ────────────────────────
+function makeNumberBond(levelId){
+  const maxTotal=Math.min(6+levelId,20);
+  const total=ri(3,maxTotal);
+  const known=ri(1,total-1);
+  const missing=total-known;
+  const side=ri(0,1); // which side is blank (0=left,1=right)
+  return {type:'number-bond',total,known,missing,blankLeft:side===0};
+}
+
+// ── CLOCK generator ─────────────────────────────
+function makeClock(levelId){
+  // L1-3: only o'clock. L4-6: half past. L7-10: quarter past/to
+  const h=ri(1,12);
+  let m=0;
+  if(levelId<=3)      m=0;
+  else if(levelId<=6) m=[0,30][ri(0,1)];
+  else                m=[0,15,30,45][ri(0,3)];
+  const fmt=(h2,m2)=>{ const mm=String(m2).padStart(2,'0'); return `${h2}:${mm}`; };
+  const label=fmt(h,m);
+  // Generate 3 wrong times (different hour or minute)
+  const wrongs=new Set();
+  while(wrongs.size<3){
+    const wh=ri(1,12), wm=levelId<=3?0:[0,15,30,45][ri(0,3)];
+    const w=fmt(wh,wm);
+    if(w!==label) wrongs.add(w);
+  }
+  const choices=[label,...wrongs].sort(()=>Math.random()-.5);
+  return {type:'clock-read',hour:h,minute:m,label,choices};
+}
+
 function generateExercises(levelId, mode){
   const exs=[];
+  // Positions of new-type exercises within a 10-exercise set (indices 1,3,5,7)
+  const NEW_SLOTS=new Set([1,3,5,7]);
+  const newTypeOrder=[
+    ()=>makeWordProblem(levelId),
+    ()=>makeCompare(levelId),
+    ()=>makeNumberBond(levelId),
+    ()=>makeClock(levelId),
+  ];
+  let newIdx=0;
+
   for(let i=0;i<10;i++){
+    if(NEW_SLOTS.has(i)){
+      exs.push(newTypeOrder[newIdx%newTypeOrder.length]());
+      newIdx++;
+      continue;
+    }
     if(mode==='count')      exs.push(makeCountEx(levelId));
     else if(mode==='calc')  exs.push(makeCalcEx(levelId));
     else if(mode==='seq')   exs.push(makeSeqEx(levelId));
     else {
-      // mixed: rotate through all types
-      const r=i%3;
-      if(r===0)      exs.push(makeCountEx(Math.min(levelId,6)));
-      else if(r===1) exs.push(makeCalcEx(Math.min(levelId,10)));
-      else           exs.push(makeSeqEx(Math.min(levelId,10)));
+      const r=exs.filter(e=>!NEW_SLOTS.has(exs.indexOf(e))).length;
+      if(r%3===0)      exs.push(makeCountEx(Math.min(levelId,6)));
+      else if(r%3===1) exs.push(makeCalcEx(Math.min(levelId,10)));
+      else             exs.push(makeSeqEx(Math.min(levelId,10)));
     }
   }
   return exs;
@@ -689,6 +799,10 @@ function renderExercise(){
     case 'missing-add':
     case 'missing-sub':   renderMissing(ex,card,isFirst);      break;
     case 'multiply-pick': renderMultiply(ex,card,isFirst);     break;
+    case 'word-problem':  renderWordProblem(ex,card,isFirst);  break;
+    case 'compare-nums':  renderCompare(ex,card,isFirst);      break;
+    case 'number-bond':   renderNumberBond(ex,card,isFirst);   break;
+    case 'clock-read':    renderClock(ex,card,isFirst);        break;
   }
 }
 
@@ -818,6 +932,169 @@ function renderMultiply(ex,card,isFirst){
     <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
   replayCounter=0;
   setTimeout(()=>{ speakNum(`${a} times ${b} equals?`); updateReplayCount(); }, isFirst?1200:400);
+}
+
+// ── WORD PROBLEM ─────────────────────────────────
+function renderWordProblem(ex,card,isFirst){
+  const {scene,text,answer,max}=ex;
+  const choices=wrongNums(answer,3,0,max);
+  card.innerHTML=`
+    <div class="question-text">📖 Story problem!</div>
+    <div class="word-problem-box">
+      <span class="word-problem-scene">${scene}</span>
+      ${text}
+    </div>
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath(${JSON.stringify(text)},this)">🔊 Read it <span class="replay-count" id="replayCount"></span></button></div>
+    <div class="choices-grid-4" id="choicesGrid">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,${c},${answer},'${answer}')"><span class="check-icon"></span><span class="choice-num">${c}</span></div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  setTimeout(()=>{ speakNum(text); updateReplayCount(); }, isFirst?1200:500);
+}
+
+// ── COMPARE NUMBERS ──────────────────────────────
+function renderCompare(ex,card,isFirst){
+  const {a,b,answer}=ex;
+  const opts=['<','>','='];
+  card.innerHTML=`
+    <div class="question-text">Which symbol goes in the middle?</div>
+    <div class="compare-row">
+      <div class="compare-num">${a}</div>
+      <div class="compare-gap">?</div>
+      <div class="compare-num">${b}</div>
+    </div>
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath('${a} compared to ${b}',this)">🔊 Hear it <span class="replay-count" id="replayCount"></span></button></div>
+    <div class="compare-choices" id="choicesGrid">
+      ${opts.map(sym=>`<button class="compare-btn" onclick="checkCompare(this,'${sym}','${answer}')">${sym}</button>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  setTimeout(()=>{ speakNum(`Is ${a} less than, greater than, or equal to ${b}?`); updateReplayCount(); }, isFirst?1200:500);
+}
+
+function checkCompare(el,chosen,correct){
+  if(answered) return; answered=true;
+  document.querySelectorAll('.compare-btn').forEach(b=>b.disabled=true);
+  const label={'>':'greater than','<':'less than','=':'equal to'}[correct]||correct;
+  if(chosen===correct){
+    el.classList.add('correct'); score++;
+    document.getElementById('scoreDisplay').textContent=score;
+    showFeedback(true,`✅ Yes! ${el.textContent} is correct!`);
+    spawnSparkles(el); speakSuccess();
+  } else {
+    el.classList.add('wrong');
+    document.querySelectorAll('.compare-btn').forEach(b=>{ if(b.textContent===correct) b.classList.add('correct'); });
+    showFeedback(false,`The answer is "${correct}" (${label}). Keep going! 💪`);
+    speakWrong(); setTimeout(()=>speakNum(`The answer is ${label}`),900);
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+// ── NUMBER BOND ──────────────────────────────────
+function renderNumberBond(ex,card,isFirst){
+  const {total,known,missing,blankLeft}=ex;
+  const leftVal=blankLeft?'?':known;
+  const rightVal=blankLeft?known:'?';
+  const leftClass=blankLeft?'bond-part bond-blank':'bond-part bond-known';
+  const rightClass=blankLeft?'bond-part bond-known':'bond-part bond-blank';
+  const choices=wrongNums(missing,3,1,total);
+  card.innerHTML=`
+    <div class="question-text">🔢 Find the missing part!</div>
+    <div class="bond-diagram">
+      <div class="bond-total">${total}</div>
+      <div style="display:flex;gap:0;align-items:flex-start;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:2px;height:28px;background:#CBD5E0;margin-left:38px;"></div>
+          <div style="display:flex;gap:40px;">
+            <div class="${leftClass}">${leftVal}</div>
+            <div class="${rightClass}">${rightVal}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath('${total} equals ${blankLeft?'what':'known'} plus ${blankLeft?'known':'what'}',this)">🔊 Hear it <span class="replay-count" id="replayCount"></span></button></div>
+    <div class="choices-grid-4" id="choicesGrid">
+      ${choices.map(c=>`<div class="choice-card" onclick="checkPick(this,${c},${missing},'${missing}')"><span class="check-icon"></span><span class="choice-num">${c}</span></div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  const speakText=blankLeft?`What plus ${known} makes ${total}?`:`${known} plus what makes ${total}?`;
+  setTimeout(()=>{ speakNum(speakText); updateReplayCount(); }, isFirst?1200:500);
+}
+
+// ── CLOCK READ ───────────────────────────────────
+function drawClock(h,m){
+  const r=90, cx=100, cy=100;
+  const toRad=deg=>deg*Math.PI/180;
+  // Hour hand: 360/12 per hour, plus fraction for minutes
+  const hAngle=(h%12)*30 + m*0.5 - 90;
+  const mAngle=m*6 - 90;
+  const hx=cx+55*Math.cos(toRad(hAngle)), hy=cy+55*Math.sin(toRad(hAngle));
+  const mx=cx+78*Math.cos(toRad(mAngle)), my=cy+78*Math.sin(toRad(mAngle));
+  let ticks='';
+  for(let i=0;i<12;i++){
+    const a=i*30-90, big=i%3===0;
+    const x1=cx+(r-4)*Math.cos(toRad(a)), y1=cy+(r-4)*Math.sin(toRad(a));
+    const x2=cx+(r-(big?14:8))*Math.cos(toRad(a)), y2=cy+(r-(big?14:8))*Math.sin(toRad(a));
+    ticks+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${big?'#2D3748':'#A0AEC0'}" stroke-width="${big?3:1.5}" stroke-linecap="round"/>`;
+  }
+  // Hour numbers
+  let nums='';
+  [12,1,2,3,4,5,6,7,8,9,10,11].forEach((n,i)=>{
+    const a=i*30-90;
+    const nx=cx+72*Math.cos(toRad(a)), ny=cy+72*Math.sin(toRad(a));
+    nums+=`<text x="${nx.toFixed(1)}" y="${(ny+5).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="800" fill="#4A5568" font-family="Nunito,sans-serif">${n}</text>`;
+  });
+  return `<svg viewBox="0 0 200 200" width="170" height="170" style="filter:drop-shadow(0 8px 20px rgba(0,0,0,.18))">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="white" stroke="#E2E8F0" stroke-width="6"/>
+    <circle cx="${cx}" cy="${cy}" r="${r-2}" fill="none" stroke="#FED7AA" stroke-width="3"/>
+    ${ticks}${nums}
+    <line x1="${cx}" y1="${cy}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="#2D3748" stroke-width="7" stroke-linecap="round"/>
+    <line x1="${cx}" y1="${cy}" x2="${mx.toFixed(1)}" y2="${my.toFixed(1)}" stroke="#F6AD55" stroke-width="4.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="6" fill="#2D3748"/>
+    <circle cx="${cx}" cy="${cy}" r="3" fill="#F6AD55"/>
+  </svg>`;
+}
+
+function renderClock(ex,card,isFirst){
+  const {hour,minute,label,choices}=ex;
+  const timeWords=m=>m===0?'o\'clock':m===30?'half past':m===15?'quarter past':m===45?'quarter to':'';
+  const tw=timeWords(minute);
+  const spokenLabel=minute===0?`${hour} o'clock`:minute===30?`half past ${hour}`:minute===15?`quarter past ${hour}`:minute===45?`quarter to ${hour===12?1:hour+1}`:`${hour} ${String(minute).padStart(2,'0')}`;
+  card.innerHTML=`
+    <div class="question-text">🕐 What time is it?</div>
+    <div class="clock-wrap">${drawClock(hour,minute)}</div>
+    ${tw?`<div style="text-align:center;font-size:.95rem;font-weight:700;color:#A0AEC0;margin-bottom:12px;">Hint: it's ${tw}…</div>`:''}
+    <div class="replay-bar"><button class="replay-btn" id="replayBtn" onclick="replayMath(${JSON.stringify(spokenLabel)},this)">🔊 Hear it <span class="replay-count" id="replayCount"></span></button></div>
+    <div class="clock-choices" id="choicesGrid">
+      ${choices.map(c=>`<div class="clock-choice" onclick="checkClockPick(this,'${c}','${label}')">
+        <span class="check-icon"></span>${c}</div>`).join('')}
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextExercise()">Next ➡️</button>`;
+  replayCounter=0;
+  setTimeout(()=>{ speakNum(`What time does the clock show?`); updateReplayCount(); }, isFirst?1200:500);
+}
+
+function checkClockPick(el,chosen,correct){
+  if(answered) return; answered=true;
+  document.querySelectorAll('.clock-choice').forEach(c=>{ c.onclick=null; });
+  if(chosen===correct){
+    el.classList.add('correct'); el.querySelector('.check-icon').textContent='✅';
+    score++; document.getElementById('scoreDisplay').textContent=score;
+    showFeedback(true,`🌟 Correct! The time is ${correct}!`);
+    spawnSparkles(el); speakSuccess();
+  } else {
+    el.classList.add('wrong'); el.querySelector('.check-icon').textContent='❌';
+    document.querySelectorAll('.clock-choice').forEach(c=>{ if(c.textContent.trim()===correct){ c.classList.add('correct'); c.querySelector('.check-icon').textContent='✅'; } });
+    showFeedback(false,`The time is ${correct}. Keep going! 💪`);
+    speakWrong(); setTimeout(()=>speakNum(`The time is ${correct}`),900);
+  }
+  document.getElementById('nextBtn').classList.add('show');
 }
 
 // ═══════════════════════════════════════════════
@@ -990,10 +1267,17 @@ function getVoiceMeta(voice){
 
 function buildVoicePicker(){
   if(!speechSynth) return;
-  const voices = speechSynth.getVoices().filter(v=>v.localService!==false);
+  // Do NOT filter by localService — premium/neural voices may have localService:undefined
+  const voices = speechSynth.getVoices();
   if(!voices.length) return;
 
-  const enVoices   = voices.filter(v=>v.lang.startsWith('en'));
+  // Quality-ranked English voices (neural/premium first)
+  const QUALITY_EN = /samantha|karen|ava|aria|nova|allison|victoria|fiona|moira|tessa|daniel|rishi|susan|siri/i;
+  const enVoices = [
+    ...voices.filter(v=>v.lang.startsWith('en') && QUALITY_EN.test(v.name)),
+    ...voices.filter(v=>v.lang.startsWith('en') && !QUALITY_EN.test(v.name)),
+  ].filter((v,i,a)=>a.findIndex(x=>x.name===v.name)===i); // dedupe
+
   const otherVoices= voices.filter(v=>!v.lang.startsWith('en')).slice(0,8);
 
   function makeCards(list, containerId){
@@ -1003,7 +1287,7 @@ function buildVoicePicker(){
     list.forEach(v=>{
       const m = getVoiceMeta(v);
       const card = document.createElement('div');
-      card.className = 'vp-card' + (selectedVoice===v?' selected':'');
+      card.className = 'vp-card' + (selectedVoice&&selectedVoice.name===v.name?' selected':'');
       card.dataset.voiceName = v.name;
       card.innerHTML = `<span class="vp-flag">${m.flag}</span><span class="vp-name">${m.name}</span><span class="vp-sample">${m.sample}</span>`;
       card.onclick = ()=>selectVoice(v, card);
@@ -1018,9 +1302,9 @@ function buildVoicePicker(){
   const otherSec = document.getElementById('vpCards_other');
   if(otherSec && !otherSec.children.length) otherSec.closest('.vp-section').style.display='none';
 
-  // auto-select a pleasant default (Samantha or first en)
+  // auto-select: prefer premium quality voices
   if(!selectedVoice){
-    const def = voices.find(v=>/samantha|karen|ava|daniel/i.test(v.name)&&v.lang.startsWith('en'))
+    const def = voices.find(v=>v.lang.startsWith('en') && QUALITY_EN.test(v.name))
               || voices.find(v=>v.lang.startsWith('en'))
               || voices[0];
     if(def){
@@ -1073,8 +1357,18 @@ function toggleVoicePicker(){
 function speakNum(text){
   if(!speechSynth) return; speechSynth.cancel();
   const u=new SpeechSynthesisUtterance(String(text));
-  if(selectedVoice){ u.voice=selectedVoice; u.lang=selectedVoice.lang; }
-  else { u.lang='en-US'; const v=speechSynth.getVoices().find(x=>x.lang.startsWith('en')&&/samantha|karen|ava/i.test(x.name))||speechSynth.getVoices().find(x=>x.lang.startsWith('en')); if(v) u.voice=v; }
+  if(selectedVoice){
+    u.voice=selectedVoice; u.lang=selectedVoice.lang;
+  } else {
+    // Same quality-ranked fallback as German game — no localService filter
+    const QUALITY=/samantha|karen|ava|aria|nova|allison|victoria|fiona|moira|tessa|daniel/i;
+    const all=speechSynth.getVoices();
+    const v=all.find(x=>x.lang.startsWith('en')&&QUALITY.test(x.name))
+           ||all.find(x=>x.lang.startsWith('en'))
+           ||all[0];
+    if(v) u.voice=v;
+    u.lang='en-US';
+  }
   u.rate=.88; u.pitch=1.1;
   speechSynth.speak(u);
 }
