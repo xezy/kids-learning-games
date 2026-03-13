@@ -610,7 +610,7 @@ function renderListenType(ex,card){
   const t=ex.target;
   card.innerHTML=`
     <div class="listen-area">
-      <span class="big-emoji-display" id="emojiHint" style="filter:blur(10px);transition:filter .5s">${t.emoji}</span><br>
+      <span class="big-emoji-display" id="emojiHint" style="transition:filter .5s">${t.emoji}</span><br>
       <button class="replay-btn" id="replayBtn" onclick="replayWord('${t.word}',this)" style="font-size:1.2rem;padding:13px 32px;">
         🔊 Play Word
         <span class="audio-wave" id="audioWave" style="display:none"><span></span><span></span><span></span><span></span></span>
@@ -633,6 +633,7 @@ function renderListenType(ex,card){
 // ═══════════════════════════════════════════════
 function checkPick(el,chosen,correct,correctEmoji){
   if(answered) return; answered=true;
+  speakGerman(chosen);
   document.querySelectorAll('.choice-card').forEach(c=>c.classList.add('disabled'));
   if(chosen===correct){
     el.classList.add('correct'); el.querySelector('.check-icon').textContent='✅';
@@ -657,7 +658,6 @@ function checkListen(correct){
   const ans=input.value.trim(); if(!ans) return;
   answered=true; input.disabled=true;
   document.getElementById('submitBtn').disabled=true;
-  document.getElementById('emojiHint').style.filter='blur(0)';
   const ok=ans.toLowerCase()===correct.toLowerCase();
   showLetterFeedback(ans,correct);
   if(ok){
