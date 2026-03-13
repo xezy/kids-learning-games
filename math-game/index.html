@@ -64,6 +64,28 @@
   .start-btn:hover{transform:translateY(-4px) scale(1.05);}
   .start-btn:active{transform:scale(.97);}
 
+  /* VOICE PICKER */
+  .voice-picker-wrap{width:100%;max-width:500px;margin-top:18px;}
+  .voice-picker-toggle{display:flex;align-items:center;gap:10px;background:white;border:none;border-radius:999px;padding:10px 22px;font-size:.95rem;font-family:'Baloo 2',cursive;font-weight:700;color:#718096;cursor:pointer;box-shadow:0 4px 14px var(--shadow);transition:all .2s;width:100%;justify-content:center;}
+  .voice-picker-toggle:hover{color:var(--lion);transform:translateY(-2px);}
+  .voice-picker-toggle .vpt-arrow{font-size:.7rem;transition:transform .25s;}
+  .voice-picker-toggle.open .vpt-arrow{transform:rotate(180deg);}
+  .voice-panel{display:none;background:white;border-radius:22px;padding:18px 16px;margin-top:10px;box-shadow:0 8px 24px var(--shadow);animation:fadeIn .22s ease;}
+  .voice-panel.open{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+  .vp-section{margin-bottom:16px;}
+  .vp-section-label{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#A0AEC0;margin-bottom:8px;}
+  .vp-cards{display:flex;flex-wrap:wrap;gap:8px;}
+  .vp-card{display:flex;flex-direction:column;align-items:center;gap:3px;background:#F7FAFC;border:3px solid #E2E8F0;border-radius:14px;padding:10px 14px;cursor:pointer;transition:all .2s cubic-bezier(.34,1.56,.64,1);min-width:80px;}
+  .vp-card:hover{transform:translateY(-3px) scale(1.04);border-color:var(--lion);background:#FFFAF0;}
+  .vp-card.selected{border-color:var(--lion);background:#FFF5E6;box-shadow:0 0 0 3px rgba(246,173,85,.25);}
+  .vp-card .vp-flag{font-size:1.6rem;line-height:1;}
+  .vp-card .vp-name{font-size:.72rem;font-weight:800;color:var(--text);text-align:center;line-height:1.2;}
+  .vp-card .vp-sample{font-size:.62rem;color:#A0AEC0;font-style:italic;}
+  .vp-preview-btn{width:100%;background:linear-gradient(135deg,var(--teal),#2C7A7B);color:white;border:none;border-radius:999px;padding:10px;font-size:.95rem;font-family:'Baloo 2',cursive;font-weight:700;cursor:pointer;margin-top:4px;transition:all .2s;}
+  .vp-preview-btn:hover{transform:translateY(-2px);}
+  .vp-preview-btn:active{transform:scale(.97);}
+
   /* ADVENTURE MAP */
   #levelSelectScreen{padding-bottom:60px;}
   .ls-back{background:white;border:none;border-radius:999px;padding:8px 18px;font-size:1rem;font-family:'Baloo 2',cursive;font-weight:700;color:#718096;cursor:pointer;box-shadow:0 4px 12px var(--shadow);transition:all .2s;}
@@ -214,6 +236,24 @@
       <span class="mode-icon">🔀</span>
       <span class="mode-name">Mixed</span>
       <span class="mode-desc">All exercise types together</span>
+    </div>
+  </div>
+
+  <!-- Voice picker -->
+  <div class="voice-picker-wrap">
+    <button class="voice-picker-toggle" id="vpToggle" onclick="toggleVoicePicker()">
+      🎙️ <span id="vpToggleLabel">Choose a voice</span> <span class="vpt-arrow">▼</span>
+    </button>
+    <div class="voice-panel" id="voicePanel">
+      <div class="vp-section">
+        <div class="vp-section-label">🇬🇧 English</div>
+        <div class="vp-cards" id="vpCards_en"></div>
+      </div>
+      <div class="vp-section">
+        <div class="vp-section-label">🌍 Other languages</div>
+        <div class="vp-cards" id="vpCards_other"></div>
+      </div>
+      <button class="vp-preview-btn" onclick="previewVoice()">▶ Preview voice</button>
     </div>
   </div>
 </div>
@@ -914,14 +954,128 @@ function skipTransition(){
 }
 
 // ═══════════════════════════════════════════════
+//  VOICE SYSTEM
+// ═══════════════════════════════════════════════
+let selectedVoice = null;
+let selectedLang = 'en';
+
+// Voice metadata: flag, friendly name, sample phrase, lang prefix
+const VOICE_META = [
+  // English voices - common cross-platform names
+  {match:/samantha|siri/i,          flag:'🇺🇸', name:'Samantha',  sample:'friendly US',   lang:'en'},
+  {match:/karen/i,                  flag:'🇦🇺', name:'Karen',     sample:'Australian',    lang:'en'},
+  {match:/daniel.*english/i,        flag:'🇬🇧', name:'Daniel',    sample:'British',       lang:'en'},
+  {match:/moira/i,                  flag:'🇮🇪', name:'Moira',     sample:'Irish',         lang:'en'},
+  {match:/tessa/i,                  flag:'🇿🇦', name:'Tessa',     sample:'S. African',    lang:'en'},
+  {match:/fiona/i,                  flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', name:'Fiona',     sample:'Scottish',      lang:'en'},
+  {match:/zoe|zosia/i,              flag:'🇺🇸', name:'Zoë',       sample:'US natural',    lang:'en'},
+  {match:/ava/i,                    flag:'🇺🇸', name:'Ava',       sample:'US clear',      lang:'en'},
+  {match:/aria|nova/i,              flag:'🇺🇸', name:'Aria',      sample:'US crisp',      lang:'en'},
+  // Other languages
+  {match:/anna.*de|de.*anna|de-de/i,flag:'🇩🇪', name:'Anna',      sample:'Deutsch',       lang:'de'},
+  {match:/amelie|french/i,          flag:'🇫🇷', name:'Amélie',    sample:'Français',      lang:'fr'},
+  {match:/monica|spanish/i,         flag:'🇪🇸', name:'Mónica',    sample:'Español',       lang:'es'},
+  {match:/alice.*it|italiano/i,     flag:'🇮🇹', name:'Alice',     sample:'Italiano',      lang:'it'},
+];
+
+function getVoiceMeta(voice){
+  for(const m of VOICE_META){
+    if(m.match.test(voice.name) || m.match.test(voice.lang)) return m;
+  }
+  // fallback: derive from lang code
+  const flags = {'en':'🇺🇸','de':'🇩🇪','fr':'🇫🇷','es':'🇪🇸','it':'🇮🇹','nl':'🇳🇱','pt':'🇵🇹','ja':'🇯🇵','zh':'🇨🇳','ko':'🇰🇷'};
+  const lc = voice.lang.slice(0,2).toLowerCase();
+  return {flag: flags[lc]||'🌐', name: voice.name.split(' ')[0], sample: voice.lang, lang: lc};
+}
+
+function buildVoicePicker(){
+  if(!speechSynth) return;
+  const voices = speechSynth.getVoices().filter(v=>v.localService!==false);
+  if(!voices.length) return;
+
+  const enVoices   = voices.filter(v=>v.lang.startsWith('en'));
+  const otherVoices= voices.filter(v=>!v.lang.startsWith('en')).slice(0,8);
+
+  function makeCards(list, containerId){
+    const container = document.getElementById(containerId);
+    if(!container) return;
+    container.innerHTML = '';
+    list.forEach(v=>{
+      const m = getVoiceMeta(v);
+      const card = document.createElement('div');
+      card.className = 'vp-card' + (selectedVoice===v?' selected':'');
+      card.dataset.voiceName = v.name;
+      card.innerHTML = `<span class="vp-flag">${m.flag}</span><span class="vp-name">${m.name}</span><span class="vp-sample">${m.sample}</span>`;
+      card.onclick = ()=>selectVoice(v, card);
+      container.appendChild(card);
+    });
+  }
+
+  makeCards(enVoices,    'vpCards_en');
+  makeCards(otherVoices, 'vpCards_other');
+
+  // hide other-languages section if empty
+  const otherSec = document.getElementById('vpCards_other');
+  if(otherSec && !otherSec.children.length) otherSec.closest('.vp-section').style.display='none';
+
+  // auto-select a pleasant default (Samantha or first en)
+  if(!selectedVoice){
+    const def = voices.find(v=>/samantha|karen|ava|daniel/i.test(v.name)&&v.lang.startsWith('en'))
+              || voices.find(v=>v.lang.startsWith('en'))
+              || voices[0];
+    if(def){
+      const card = document.querySelector(`[data-voice-name="${CSS.escape(def.name)}"]`);
+      selectVoice(def, card, true);
+    }
+  }
+}
+
+function selectVoice(voice, cardEl, silent){
+  selectedVoice = voice;
+  selectedLang  = voice.lang.slice(0,2).toLowerCase();
+  document.querySelectorAll('.vp-card').forEach(c=>c.classList.remove('selected'));
+  if(cardEl) cardEl.classList.add('selected');
+  const m = getVoiceMeta(voice);
+  document.getElementById('vpToggleLabel').textContent = `${m.flag} ${m.name}`;
+  if(!silent) previewVoice();
+}
+
+function previewVoice(){
+  if(!speechSynth||!selectedVoice) return;
+  speechSynth.cancel();
+  const phrases = {
+    en:["Let's do some maths! Ready?", "Three, two, one — go!"],
+    de:["Lass uns Mathe machen!", "Toll gemacht!"],
+    fr:["Faisons des maths ensemble!", "Bien joué!"],
+    es:["¡Vamos a hacer matemáticas!", "¡Muy bien!"],
+    it:["Facciamo matematica insieme!", "Bravo!"],
+  };
+  const list = phrases[selectedLang] || phrases.en;
+  const text = list[Math.floor(Math.random()*list.length)];
+  const u = new SpeechSynthesisUtterance(text);
+  u.voice = selectedVoice; u.lang = selectedVoice.lang;
+  u.rate = .88; u.pitch = 1.1;
+  speechSynth.speak(u);
+}
+
+function toggleVoicePicker(){
+  const panel  = document.getElementById('voicePanel');
+  const toggle = document.getElementById('vpToggle');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  toggle.classList.toggle('open', !isOpen);
+  if(!isOpen) buildVoicePicker(); // rebuild each open so voices are loaded
+}
+
+// ═══════════════════════════════════════════════
 //  AUDIO
 // ═══════════════════════════════════════════════
 function speakNum(text){
   if(!speechSynth) return; speechSynth.cancel();
   const u=new SpeechSynthesisUtterance(String(text));
-  u.lang='en-US'; u.rate=.85; u.pitch=1.1;
-  const v=speechSynth.getVoices().find(x=>x.lang.startsWith('en')&&/samantha|karen|moira|tessa/i.test(x.name))||speechSynth.getVoices().find(x=>x.lang.startsWith('en'));
-  if(v) u.voice=v;
+  if(selectedVoice){ u.voice=selectedVoice; u.lang=selectedVoice.lang; }
+  else { u.lang='en-US'; const v=speechSynth.getVoices().find(x=>x.lang.startsWith('en')&&/samantha|karen|ava/i.test(x.name))||speechSynth.getVoices().find(x=>x.lang.startsWith('en')); if(v) u.voice=v; }
+  u.rate=.88; u.pitch=1.1;
   speechSynth.speak(u);
 }
 function replayMath(text,btn){
@@ -932,7 +1086,15 @@ function replayMath(text,btn){
 function updateReplayCount(){ const el=document.getElementById('replayCount'); if(el) el.textContent=replayCounter>0?`×${replayCounter}`:''; }
 function speakSuccess(){ const p=['Fantastic!','Brilliant!','Well done!','Correct!','Amazing!','Super!']; setTimeout(()=>speakNum(p[Math.floor(Math.random()*p.length)]),300); }
 function speakWrong(){ const p=['Try again!','Not quite!','Almost there!','Keep going!']; setTimeout(()=>speakNum(p[Math.floor(Math.random()*p.length)]),300); }
-if(speechSynth) speechSynth.onvoiceschanged=()=>speechSynth.getVoices();
+if(speechSynth){
+  speechSynth.onvoiceschanged=()=>{
+    speechSynth.getVoices();
+    // auto-select default voice silently on first load
+    if(!selectedVoice) buildVoicePicker();
+  };
+  // trigger immediately in case voices are already available
+  if(speechSynth.getVoices().length) buildVoicePicker();
+}
 
 // ═══════════════════════════════════════════════
 //  SPARKLES & CONFETTI
